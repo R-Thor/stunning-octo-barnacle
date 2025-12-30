@@ -1,279 +1,128 @@
-# Bootstrap Guide  
-Initialize and launch the Enterprise development environment
+# Bootstrap‑WSL.md
 
-This document provides the complete, step‑by‑step bootstrap process for setting up the Enterprise architecture from a clean Windows 11 system. It covers WSL2 initialization, Podman setup, dev-box creation, and the workflow for launching VS Code and Dev Containers.
+## Bootstrap Guide — WSL + Podman‑in‑Podman
 
-This is the authoritative guide for bringing the system online.
-
----
-
-# 1. Overview
-
-The bootstrap process creates the following stack:
-
-    Windows 11
-      └── WSL2: Debian-Enterprise
-            └── Podman (host)
-                  └── dev-box
-                        └── Podman (inner)
-                              ├── ai-sandbox-dev (Dev Container)
-                              ├── java-dev (Dev Container)
-                              └── dotnet-dev (Dev Container)
-
-The goal is to:
-
-- Keep Windows clean  
-- Keep WSL2 clean  
-- Run all development inside dev-box  
-- Run all Dev Containers under inner Podman  
-- Ensure deterministic, reproducible environments  
+### Purpose  
+This guide describes how to install and initialize the WSL‑based development environment using Fedora WSL, Podman, and the dev‑box‑vscode container.
 
 ---
 
-# 2. Prerequisites
+## 1. Enable Required Windows Features
 
-Before bootstrapping, ensure:
-
-- Windows 11 is fully updated  
-- WSL2 is enabled  
-- Virtualization is enabled in BIOS  
-- You have administrative rights  
-
-No development tools should be installed on Windows.
-
----
-
-# 3. Install WSL2
-
-Open PowerShell (Admin):
+Open PowerShell as Administrator and run:
 
     wsl --install
 
+This enables:  
+- Windows Subsystem for Linux  
+- Virtual Machine Platform  
+- Installs the default Ubuntu distro  
+- Sets WSL2 as the default version  
+
 Reboot when prompted.
 
-After reboot:
+---
 
-    wsl --set-default-version 2
+## 2. Install Fedora WSL
 
-Install Debian:
+Download the Fedora WSL package and install it:
 
-    wsl --install -d Debian
+    Add-AppxPackage .\FedoraWSL.appx
 
-This becomes **Debian-Enterprise**.
+Launch Fedora from the Start Menu.
 
 ---
 
-# 4. Configure Debian-Enterprise
+## 3. Initialize Fedora WSL
 
-Inside Debian:
+Inside Fedora, run:
 
-Update packages:
+    sudo dnf update -y  
+    sudo dnf install podman -y  
+    sudo loginctl enable-linger $USER
 
-    sudo apt update && sudo apt upgrade -y
-
-Install dependencies:
-
-    sudo apt install -y \
-        curl \
-        git \
-        unzip \
-        ca-certificates \
-        gnupg \
-        build-essential
+(Enable systemd if your Fedora build requires it.)
 
 ---
 
-# 5. Install Podman (host)
+## 4. Clone Your Environment Repository
 
-Inside Debian:
+Inside Fedora:
 
-    sudo apt install -y podman
+    git clone <your-repo>  
+    cd <your-repo>
 
-Verify:
-
-    podman --version
-
-Enable user-mode Podman:
-
-    podman info
-
-If needed, initialize storage:
-
-    podman machine init
-    podman machine start
+This repo contains:  
+- Containerfile for dev‑box‑vscode  
+- Project templates  
+- Documentation  
+- Optional scripts
 
 ---
 
-# 6. Create dev-box
+## 5. Build the dev‑box‑vscode Container
 
-Clone your Enterprise repo inside Debian:
+    podman build -t dev-box-vscode -f Containerfile .
 
-    git clone <your-repo-url>
-    cd <repo>
-
-Build dev-box:
-
-    podman build -t dev-box -f dev-box/Containerfile .
-
-Create persistent volumes:
-
-    podman volume create devbox-home
-    podman volume create devbox-workspace
-
-Run dev-box:
-
-    podman run -d \
-      --name dev-box \
-      -v devbox-home:/home/dev \
-      -v devbox-workspace:/workspace \
-      --privileged \
-      dev-box
-
-Enter dev-box:
-
-    podman exec -it dev-box bash
-
-You now “live” inside dev-box.
+This creates the canonical workstation container with:  
+- Fedora base  
+- VS Code Server  
+- Podman (nested)  
+- All runtimes  
+- All tooling
 
 ---
 
-# 7. Initialize Inner Podman
+## 6. Run dev‑box‑vscode
 
-Inside dev-box:
+    podman run -it --name dev-box-vscode -p 127.0.0.1:2222:2222 localhost/dev-box-vscode
 
-Verify Podman is installed:
-
-    podman --version
-
-Initialize storage:
-
-    podman info
-
-This Podman instance is the **inner Podman** that will run all Dev Containers.
+This starts:  
+- VS Code Server  
+- SSH server on port 2222  
+- The full development environment
 
 ---
 
-# 8. Launch VS Code
+## 7. Connect VS Code Desktop (Optional)
 
-Inside dev-box:
+If using VS Code Desktop on Windows:
 
-    code .
+1. Install the Remote SSH extension  
+2. Add this to your SSH config:
 
-VS Code will:
+       Host devbox  
+           HostName 127.0.0.1  
+           Port 2222  
+           User dev
 
-- Connect to dev-box  
-- Detect `.devcontainer` folders  
-- Offer to reopen in the appropriate Dev Container  
+3. Connect to “devbox”
 
-This is the correct workflow.
-
----
-
-# 9. Build Dev Containers
-
-Open each project folder in VS Code:
-
-- `ai-sandbox/`
-- `java-project/`
-- `dotnet-project/`
-
-VS Code will automatically:
-
-- Detect `.devcontainer/devcontainer.json`  
-- Build the Dev Container  
-- Attach to it  
-
-Each Dev Container runs under **inner Podman**.
+Alternatively, use the browser-based VS Code Server.
 
 ---
 
-# 10. Start Model Containers (Optional)
+## 8. Create Project Containers
 
-Inside the AI Sandbox Dev Container:
+Inside dev‑box‑vscode:
 
-    ./start-ollama.sh
-    ./start-lmstudio.sh
-    ./start-openai-server.sh
+    podman build -t project-<name> -f project/Containerfile .  
+    podman run -it project-<name>
 
-Or use Podman directly:
-
-    podman run ...
-    podman ps
-
-Model containers run under inner Podman and are logically grouped under AI Sandbox.
+Each project container is:  
+- Isolated  
+- Reproducible  
+- Versioned  
+- Workspace-specific
 
 ---
 
-# 11. Recommended Daily Workflow
+## 9. Workflow Summary
 
-1. Start WSL2  
-2. Start dev-box  
-3. Enter dev-box  
-4. Launch VS Code from inside dev-box  
-5. Open a project folder  
-6. VS Code attaches to the correct Dev Container  
-7. Develop normally  
+- WSL provides the Linux kernel  
+- Fedora WSL provides the base environment  
+- dev‑box‑vscode is the canonical workstation  
+- Project containers isolate workloads  
+- Windows host remains clean
 
-This ensures:
-
-- Isolation  
-- Reproducibility  
-- Predictability  
-
----
-
-# 12. Rebuilding the Environment
-
-## Rebuild a Dev Container
-
-Inside VS Code:
-
-    Dev Containers: Rebuild Container
-
-## Rebuild dev-box
-
-    podman stop dev-box
-    podman rm dev-box
-    podman build -t dev-box -f dev-box/Containerfile .
-    podman run ... (same as initial run)
-
-## Rebuild inner Podman
-
-Inside dev-box:
-
-    rm -rf ~/.local/share/containers
-    podman info
-
----
-
-# 13. Troubleshooting
-
-## VS Code cannot attach to Dev Container
-- Ensure VS Code was launched **inside dev-box**  
-- Ensure inner Podman is working (`podman ps`)  
-
-## Dev Container build fails
-- Rebuild dev-box  
-- Rebuild the Dev Container  
-- Ensure volumes are not corrupted  
-
-## Model containers cannot start
-- Ensure inner Podman is running  
-- Ensure ports are not in use  
-- Rebuild the model container  
-
----
-
-# 14. Summary
-
-This bootstrap guide provides the complete process for:
-
-- Installing WSL2  
-- Installing Podman  
-- Creating dev-box  
-- Initializing inner Podman  
-- Launching VS Code  
-- Building Dev Containers  
-- Running model containers  
-
-Follow this guide to bring the Enterprise environment online in a clean, deterministic, reproducible way.
+This completes the WSL bootstrap.
