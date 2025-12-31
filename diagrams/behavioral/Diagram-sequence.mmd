@@ -1,0 +1,47 @@
+sequenceDiagram
+    autonumber
+
+    participant W as Windows 11 Host
+    participant P as Podman Desktop
+    participant D as dev-box-vscode<br>(Canonical Workstation)
+    participant IP as Inner Podman
+    participant J as java-dev<br>(Dev Container)
+    participant N as dotnet-dev<br>(Dev Container)
+    participant A as ai-sandbox-dev<br>(Dev Container)
+    participant M as Model Containers<br>(ollama / lmstudio / openai-compatible)
+
+    %% Startup
+    W->>P: Launch Podman Desktop
+    P->>D: Start dev-box-vscode container
+    D->>W: Expose VS Code Server (SSH / Browser)
+
+    %% Developer connects
+    W->>D: Developer connects via VS Code
+
+    %% Inner Podman initialization
+    D->>IP: Initialize inner Podman engine
+
+    %% Project workflow
+    W->>D: Open project folder in VS Code
+    D->>IP: Request matching Dev Container
+    IP->>J: Start java-dev (if Java project)
+    IP->>N: Start dotnet-dev (if .NET project)
+
+    %% AI Sandbox workflow
+    W->>D: Open AI Sandbox folder
+    D->>IP: Request ai-sandbox-dev
+    IP->>A: Start ai-sandbox-dev
+
+    %% Model container orchestration
+    A->>IP: Start model containers
+    IP->>M: Launch ollama / lmstudio / openai-compatible servers
+
+    %% Usage
+    A->>M: Query model APIs
+    J->>M: (Optional) Access model APIs
+    N->>M: (Optional) Access model APIs
+
+    %% Shutdown
+    W->>P: Stop dev-box-vscode
+    P->>IP: Stop inner Podman containers
+    IP->>M: Stop model containers

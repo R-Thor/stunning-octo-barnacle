@@ -1,0 +1,56 @@
+flowchart TB
+
+    %% ============================
+    %% Root Decision
+    %% ============================
+    A[Start: What do you want to run?] --> B{Does it require the Windows kernel?}
+
+    %% ============================
+    %% Host-Only Workloads
+    %% ============================
+    B -->|Yes| H1[Run on Windows Host<br>Visual Studio / IIS / Windows SDKs]
+    H1 --> END[End]
+
+    %% ============================
+    %% Non-Windows Workloads
+    %% ============================
+    B -->|No| C{Is this a development workflow?}
+
+    %% ============================
+    %% dev-box-vscode Workstation
+    %% ============================
+    C -->|General development tools| D1[Run inside dev-box-vscode<br>(Canonical Workstation)]
+    D1 --> END
+
+    %% ============================
+    %% Project-Specific Workloads
+    %% ============================
+    C -->|Project-specific build/run| E{Which project type?}
+
+    E -->|Java| J1[Run in java-dev<br>(JDK + Maven/Gradle)]
+    J1 --> END
+
+    E -->|.NET| N1[Run in dotnet-dev<br>(.NET SDK)]
+    N1 --> END
+
+    E -->|AI Tools / Agents| A1[Run in ai-sandbox-dev<br>(AI Tools + Orchestration)]
+    A1 --> END
+
+    %% ============================
+    %% AI Model Workloads
+    %% ============================
+    A1 --> F{Is this a model server?}
+
+    F -->|Yes| M1[Run as Model Container<br>ollama / lmstudio / openai-compatible]
+    M1 --> END
+
+    F -->|No| A1
+
+    %% ============================
+    %% Cross-Container Access
+    %% ============================
+    J1 --> G{Need AI inference?}
+    N1 --> G
+
+    G -->|Yes| A1
+    G -->|No| END

@@ -1,7 +1,7 @@
 # Java Project Dev Container  
-Isolated, reproducible Java development inside the Enterprise environment
+Isolated, reproducible Java development inside the Studio Architecture
 
-The java-dev Dev Container provides a fully isolated, deterministic environment for building and running Java applications within the Enterprise architecture. This document describes the structure, tooling, workflows, and best practices for Java development inside this system.
+The **java‑dev** Dev Container provides a fully isolated, deterministic environment for building and running Java applications within the Studio Architecture. This document describes the structure, tooling, workflows, and best practices for Java development inside this system.
 
 ---
 
@@ -13,7 +13,7 @@ The Java Dev Container exists to:
 - Isolate Java tooling from the host and other projects  
 - Ensure deterministic builds using containerized JDK + Maven/Gradle  
 - Support debugging and development through VS Code Dev Containers  
-- Integrate cleanly with the Enterprise layered architecture  
+- Integrate cleanly with the Studio Architecture  
 
 The container is disposable, rebuildable, and fully declarative.
 
@@ -21,29 +21,28 @@ The container is disposable, rebuildable, and fully declarative.
 
 # 2. Architectural Placement
 
-The Java Dev Container runs under the inner Podman instance inside dev-box.
+The Java Dev Container runs under the **inner Podman** instance inside `dev-box-vscode`.
 
     Windows 11
-      └── WSL2: Debian-Enterprise
-            └── Podman (host)
-                  └── dev-box
-                        └── Podman (inner)
-                              ├── ai-sandbox-dev (Dev Container)
-                              ├── java-dev (Dev Container)
-                              └── dotnet-dev (Dev Container)
+      └── Podman Desktop
+            └── dev-box-vscode
+                  └── Podman (inner)
+                        ├── ai-sandbox-dev
+                        ├── java-dev
+                        └── dotnet-dev
 
 Key points:
 
-- java-dev is a sibling to dotnet-dev and ai-sandbox-dev  
+- java‑dev is a sibling to dotnet‑dev and ai‑sandbox‑dev  
 - It is not nested inside other containers  
 - It uses the same inner Podman as all other Dev Containers  
-- VS Code attaches to java-dev automatically when opening the Java project folder  
+- VS Code attaches to java‑dev automatically when opening the Java project folder  
 
 ---
 
 # 3. Container Contents
 
-The java-dev container typically includes:
+The java‑dev container typically includes:
 
 ## Java Tooling
 - JDK (Temurin or OpenJDK)  
@@ -55,7 +54,7 @@ The java-dev container typically includes:
 - Git  
 - Shell utilities  
 - Build tools  
-- Optional: Node.js for hybrid projects  
+- Optional: Node.js for hybrid or full‑stack projects  
 
 ## VS Code Integration
 - Java extension pack  
@@ -88,13 +87,13 @@ Only one build system is required — Maven or Gradle.
 
 ## 5.1 Opening the Project
 
-1. Start WSL2  
-2. Start dev-box  
-3. Enter dev-box  
-4. Launch VS Code from inside dev-box  
+1. Start Windows  
+2. Launch Podman Desktop  
+3. Start `dev-box-vscode`  
+4. Connect via VS Code  
 5. Open the Java project folder  
-6. VS Code detects .devcontainer  
-7. VS Code attaches to java-dev  
+6. VS Code detects `.devcontainer`  
+7. VS Code attaches to `java-dev`  
 
 You are now inside the isolated Java environment.
 
@@ -178,7 +177,7 @@ These caches are isolated and do not affect other Dev Containers.
 To rebuild:
 
 1. Open the Command Palette  
-2. Run: Dev Containers: Rebuild Container  
+2. Run: **Dev Containers: Rebuild Container**
 
 This ensures:
 
@@ -197,7 +196,7 @@ Containers are disposable — rebuilding is encouraged.
 - Use containerized JDK and build tools  
 - Rebuild the container when dependencies change  
 - Use VS Code tasks for common workflows  
-- Keep the .devcontainer folder declarative and minimal  
+- Keep the `.devcontainer` folder declarative and minimal  
 
 ---
 
@@ -211,4 +210,4 @@ The Java Dev Container provides:
 - Predictable networking  
 - Zero host pollution  
 
-This document serves as the authoritative reference for Java development inside the Enterprise architecture.
+This document serves as the authoritative reference for Java development inside the Studio Architecture.

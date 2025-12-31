@@ -1,0 +1,97 @@
+flowchart TB
+
+    %% ============================
+    %% Host Initialization
+    %% ============================
+    subgraph HOST[Windows 11 Host]
+        PODMAND[Podman Desktop<br>(Start Engine)]
+    end
+
+    PODMAND --> STARTDEVBOX
+
+    %% ============================
+    %% dev-box-vscode Lifecycle
+    %% ============================
+    subgraph DEVBOXLC[dev-box-vscode Lifecycle]
+        direction TB
+
+        STARTDEVBOX[Start dev-box-vscode<br>podman run / start]
+        RUNDEVBOX[Running dev-box-vscode<br>VS Code Server + Inner Podman]
+        REBUILDDEVBOX[Rebuild dev-box-vscode<br>podman build]
+        RESETDEVBOX[Reset dev-box-vscode<br>Remove container + recreate]
+        DESTROYDEVBOX[Destroy dev-box-vscode<br>podman rm -f]
+    end
+
+    STARTDEVBOX --> RUNDEVBOX
+    RUNDEVBOX --> REBUILDDEVBOX
+    RUNDEVBOX --> RESETDEVBOX
+    RUNDEVBOX --> DESTROYDEVBOX
+    REBUILDDEVBOX --> STARTDEVBOX
+    RESETDEVBOX --> STARTDEVBOX
+
+    %% ============================
+    %% Inner Podman Lifecycle
+    %% ============================
+    subgraph INNERPODLC[Inner Podman Engine Lifecycle]
+        direction TB
+
+        INITPOD[Initialize Inner Podman<br>podman system migrate]
+        RUNPOD[Inner Podman Running<br>Manages Dev + Model Containers]
+        CLEANPOD[Cleanup / Prune<br>podman system prune]
+    end
+
+    RUNDEVBOX --> INITPOD
+    INITPOD --> RUNPOD
+    RUNPOD --> CLEANPOD
+
+    %% ============================
+    %% Dev Container Lifecycle
+    %% ============================
+    subgraph DEVCONTAINERSLC[Dev Container Lifecycle<br>(java-dev, dotnet-dev, ai-sandbox-dev)]
+        direction TB
+
+        BUILDDC[Build Dev Container<br>podman build]
+        STARTDC[Start Dev Container<br>VS Code Attach]
+        RUNDCC[Dev Container Running<br>Build + Debug + Test]
+        REBUILDDC[Rebuild Dev Container<br>Dev Containers: Rebuild]
+        RESETDC[Reset Dev Container<br>Remove + Recreate]
+        DESTROYDC[Destroy Dev Container<br>podman rm -f]
+    end
+
+    RUNPOD --> BUILDDC
+    BUILDDC --> STARTDC
+    STARTDC --> RUNDCC
+    RUNDCC --> REBUILDDC
+    RUNDCC --> RESETDC
+    RUNDCC --> DESTROYDC
+    REBUILDDC --> STARTDC
+    RESETDC --> STARTDC
+
+    %% ============================
+    %% Model Container Lifecycle
+    %% ============================
+    subgraph MODELLC[Model Container Lifecycle<br>(ollama, lmstudio, openai-compatible)]
+        direction TB
+
+        BUILDMODEL[Build Model Container<br>podman build]
+        STARTMODEL[Start Model Container<br>podman run]
+        RUNMODEL[Model Running<br>LLM Inference / Embeddings]
+        STOPMODEL[Stop Model Container<br>podman stop]
+        UPDATEMODEL[Update Model Image<br>podman pull / rebuild]
+        DESTROYMODEL[Destroy Model Container<br>podman rm -f]
+    end
+
+    RUNPOD --> BUILDMODEL
+    BUILDMODEL --> STARTMODEL
+    STARTMODEL --> RUNMODEL
+    RUNMODEL --> STOPMODEL
+    RUNMODEL --> UPDATEMODEL
+    RUNMODEL --> DESTROYMODEL
+    STOPMODEL --> STARTMODEL
+    UPDATEMODEL --> STARTMODEL
+
+    %% ============================
+    %% Notes
+    %% ============================
+    classDef boundary fill:#f0f0f0,stroke:#333,stroke-width:1px;
+    class HOST,DEVBOXLC,INNERPODLC,DEVCONTAINERSLC,MODELLC boundary;

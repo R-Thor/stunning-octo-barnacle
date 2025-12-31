@@ -1,0 +1,93 @@
+flowchart LR
+
+    %% ============================
+    %% External Actor
+    %% ============================
+    DEV[Developer<br>VS Code UI]
+
+    %% ============================
+    %% Host Layer
+    %% ============================
+    subgraph HOST[Windows 11 Host<br>(Hypervisor)]
+        PODMAND[Podman Desktop]
+    end
+
+    %% ============================
+    %% dev-box-vscode Layer
+    %% ============================
+    subgraph DEVBOX[dev-box-vscode<br>(Canonical Workstation)]
+        direction TB
+
+        VSCODESRV[VS Code Server]
+        INNERPOD[Inner Podman Engine]
+
+        subgraph WORKSPACE[Workspace Volumes]
+            SRC[Project Source Code]
+            CFG[Devcontainer Configs]
+        end
+    end
+
+    %% ============================
+    %% Dev Containers
+    %% ============================
+    subgraph DEVCONTAINERS[Project Dev Containers]
+        direction TB
+        JAVA[java-dev<br>Build + Run]
+        DOTNET[dotnet-dev<br>Build + Run]
+    end
+
+    %% ============================
+    %% AI Sandbox + Models
+    %% ============================
+    subgraph AISANDBOX[ai-sandbox-dev<br>AI Tools + Orchestration]
+        direction TB
+        AITOOLS[AI Tools / Agents]
+    end
+
+    subgraph MODELS[Model Containers<br>(Inner Podman)]
+        direction TB
+        OLLAMA[ollama<br>LLM Inference]
+        LMSTUDIO[lmstudio<br>Inference Server]
+        OAICOMPAT[OpenAI-Compatible<br>Model Servers]
+    end
+
+    %% ============================
+    %% Data Flow Connections
+    %% ============================
+
+    %% Developer Interaction
+    DEV -->|Edits Code| VSCODESRV
+    VSCODESRV -->|Syncs Files| SRC
+
+    %% Build + Run
+    SRC --> JAVA
+    SRC --> DOTNET
+
+    %% Dev Containers Access Workspace
+    JAVA -->|Reads/Writes| SRC
+    DOTNET -->|Reads/Writes| SRC
+
+    %% Dev Containers Call AI Sandbox
+    JAVA -->|HTTP/gRPC Requests| AITOOLS
+    DOTNET -->|HTTP/gRPC Requests| AITOOLS
+
+    %% AI Sandbox Calls Model Containers
+    AITOOLS -->|Inference Request| OLLAMA
+    AITOOLS -->|Inference Request| LMSTUDIO
+    AITOOLS -->|Inference Request| OAICOMPAT
+
+    %% Model Responses
+    OLLAMA -->|LLM Output| AITOOLS
+    LMSTUDIO -->|LLM Output| AITOOLS
+    OAICOMPAT -->|LLM Output| AITOOLS
+
+    %% AI Sandbox Returns Results
+    AITOOLS -->|JSON / Tokens / Embeddings| JAVA
+    AITOOLS -->|JSON / Tokens / Embeddings| DOTNET
+
+    %% Podman Engine Relationship
+    PODMAND --> DEVBOX
+    DEVBOX --> INNERPOD
+    INNERPOD --> DEVCONTAINERS
+    INNERPOD --> AISANDBOX
+    INNERPOD --> MODELS

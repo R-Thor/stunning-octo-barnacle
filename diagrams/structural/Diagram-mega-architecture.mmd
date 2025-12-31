@@ -1,0 +1,124 @@
+flowchart TB
+
+%% ============================================================
+%% 1. Windows Host (Hypervisor Layer)
+%% ============================================================
+subgraph HOST[Windows 11 Host<br>(Immutable Hypervisor)]
+    direction TB
+    PODMAND[Podman Desktop<br>(Container Engine)]
+    VSNATIVE[Visual Studio / IIS<br>(Windows-native workloads)]
+end
+
+%% ============================================================
+%% 2. dev-box-vscode (Canonical Workstation)
+%% ============================================================
+subgraph DEVBOX[dev-box-vscode<br>(Canonical Linux Workstation)]
+    direction TB
+
+    VSCODESRV[VS Code Server<br>(Remote UI)]
+    INNERPOD[Inner Podman Engine<br>(Runs all Dev + Model Containers)]
+
+    subgraph DEVBOXVOLS[dev-box-vscode Volumes]
+        HOMEVOL[/home/dev/]
+        WORKSPACEVOL[/workspace/]
+    end
+end
+
+HOST --> PODMAND --> DEVBOX
+
+%% ============================================================
+%% 3. Inner Podman Namespace (Shared Network + Engine)
+%% ============================================================
+subgraph INNERPODNS[Inner Podman Namespace<br>(Shared Network + Storage)]
+    direction TB
+
+    %% ----------------------------
+    %% Dev Containers
+    %% ----------------------------
+    subgraph DEVCONTAINERS[Project Dev Containers<br>(Isolated Runtimes)]
+        direction TB
+
+        subgraph JAVA[java-dev]
+            JAVASRV[Java Runtime / Tools]
+            JAVACACHE[(~/.m2, ~/.gradle)]
+        end
+
+        subgraph DOTNET[dotnet-dev]
+            DOTNETSRV[.NET Runtime / Tools]
+            DOTNETCACHE[(~/.nuget)]
+        end
+    end
+
+    %% ----------------------------
+    %% AI Sandbox
+    %% ----------------------------
+    subgraph AISANDBOX[ai-sandbox-dev<br>(AI Tools + Orchestration)]
+        direction TB
+        AITOOLS[AI Tools / Agents]
+        AIPROXY[Model Router / OpenAI API Proxy]
+        AICONFIGVOL[(Sandbox Config Volume)]
+    end
+
+    %% ----------------------------
+    %% Model Containers
+    %% ----------------------------
+    subgraph MODELS[Model Containers<br>(LLM Servers)]
+        direction TB
+
+        subgraph OLLAMA[ollama]
+            OLLAMASRV[LLM Server<br>Port 11434]
+            OLLAMAVOL[(Model Weights)]
+        end
+
+        subgraph LMSTUDIO[lmstudio]
+            LMSTUDIOSRV[Inference Server<br>Port 1234]
+            LMSTUDIOVOL[(Model Cache)]
+        end
+
+        subgraph OAICOMPAT[OpenAI-Compatible]
+            OAICOMPATSrv[API Server<br>Port 8000+]
+            OAICOMPATVOL[(Embeddings / Indexes)]
+        end
+    end
+end
+
+DEVBOX --> INNERPODNS
+
+%% ============================================================
+%% 4. Network Connections
+%% ============================================================
+
+%% Dev Containers <-> AI Sandbox
+JAVASRV -->|HTTP / OpenAI API| AIPROXY
+DOTNETSRV -->|HTTP / OpenAI API| AIPROXY
+
+%% AI Sandbox <-> Model Containers
+AIPROXY -->|Inference Requests| OLLAMASRV
+AIPROXY -->|Inference Requests| LMSTUDIOSRV
+AIPROXY -->|Inference Requests| OAICOMPATSrv
+
+%% ============================================================
+%% 5. Volume Connections
+%% ============================================================
+
+%% Workspace volumes shared with Dev Containers
+WORKSPACEVOL -.-> JAVASRV
+WORKSPACEVOL -.-> DOTNETSRV
+
+%% Dev Container caches (isolated)
+JAVASRV -.-> JAVACACHE
+DOTNETSRV -.-> DOTNETCACHE
+
+%% AI Sandbox config volume
+AITOOLS -.-> AICONFIGVOL
+
+%% Model container volumes
+OLLAMASRV -.-> OLLAMAVOL
+LMSTUDIOSRV -.-> LMSTUDIOVOL
+OAICOMPATSrv -.-> OAICOMPATVOL
+
+%% ============================================================
+%% 6. Security Boundaries (Visual)
+%% ============================================================
+classDef boundary fill:#f0f0f0,stroke:#333,stroke-width:1px;
+class HOST,DEVBOX,INNERPODNS,DEVCONTAINERS,AISANDBOX,MODELS boundary;

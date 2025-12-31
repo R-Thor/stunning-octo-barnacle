@@ -1,0 +1,94 @@
+flowchart TB
+
+    %% ============================
+    %% Host Boundary
+    %% ============================
+    subgraph HOST[Windows 11 Host<br>(Security Boundary: Host Kernel)]
+        direction TB
+        PODMAND[Podman Desktop<br>(Container Engine)]
+        VSNATIVE[Visual Studio / IIS<br>(Windows-native workloads)]
+    end
+
+    %% ============================
+    %% dev-box-vscode Boundary
+    %% ============================
+    subgraph DEVBOX[dev-box-vscode<br>(Security Boundary: Canonical Workstation)]
+        direction TB
+
+        VSCODESRV[VS Code Server]
+        INNERPOD[Inner Podman Engine<br>(Runs all containers)]
+
+        subgraph DEVBOXVOL[dev-box-vscode Volumes<br>(Persistent Home + Workspaces)]
+            direction TB
+            HOME[/home/dev/]
+            WORKSPACE[/workspace/]
+        end
+    end
+
+    HOST --> DEVBOX
+
+    %% ============================
+    %% Inner Podman Boundary
+    %% ============================
+    subgraph INNERPODB[Inner Podman Namespace<br>(Security Boundary: Shared Network + Engine)]
+        direction TB
+
+        %% Dev Containers
+        subgraph DEVCONTAINERS[Project Dev Containers<br>(Isolated Runtimes)]
+            direction TB
+            JAVA[java-dev<br>JDK + Maven/Gradle]
+            DOTNET[dotnet-dev<br>.NET SDK]
+        end
+
+        %% AI Sandbox
+        subgraph AISANDBOX[ai-sandbox-dev<br>(AI Tools + Orchestration)]
+            direction TB
+            AITOOLS[AI Tools / Agents]
+        end
+
+        %% Model Containers
+        subgraph MODELS[Model Containers<br>(LLM Servers)]
+            direction TB
+            OLLAMA[ollama]
+            LMSTUDIO[lmstudio]
+            OAICOMPAT[OpenAI-Compatible Servers]
+        end
+    end
+
+    DEVBOX --> INNERPODB
+
+    %% ============================
+    %% Security Boundaries (Edges)
+    %% ============================
+
+    %% Dev Containers access workspace volumes
+    JAVA -.->|Read/Write| WORKSPACE
+    DOTNET -.->|Read/Write| WORKSPACE
+
+    %% Dev Containers cannot access each other's internals
+    JAVA -.-x DOTNET
+    DOTNET -.-x JAVA
+
+    %% AI Sandbox boundary
+    JAVA -->|HTTP/gRPC| AITOOLS
+    DOTNET -->|HTTP/gRPC| AITOOLS
+
+    %% AI Sandbox controls model access
+    AITOOLS --> OLLAMA
+    AITOOLS --> LMSTUDIO
+    AITOOLS --> OAICOMPAT
+
+    %% Dev Containers cannot directly control model containers
+    JAVA -.-x OLLAMA
+    DOTNET -.-x LMSTUDIO
+    JAVA -.-x OAICOMPAT
+
+    %% Host cannot access inner containers directly
+    HOST -.-x DEVCONTAINERS
+    HOST -.-x AISANDBOX
+    HOST -.-x MODELS
+
+    %% Model containers cannot access project containers
+    OLLAMA -.-x JAVA
+    LMSTUDIO -.-x DOTNET
+    OAICOMPAT -.-x JAVA

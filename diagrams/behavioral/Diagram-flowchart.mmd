@@ -1,0 +1,57 @@
+flowchart TD
+
+    %% ============================
+    %% Start
+    %% ============================
+    A([Start]) --> B[Launch Windows 11]
+
+    B --> C[Open Podman Desktop]
+    C --> D[Start dev-box-vscode]
+
+    %% ============================
+    %% VS Code Connection
+    %% ============================
+    D --> E[Connect via VS Code<br>(SSH or Browser)]
+    E --> F[Open a Folder in VS Code]
+
+    %% ============================
+    %% Project Detection
+    %% ============================
+    F --> G{Which folder<br>did the user open?}
+
+    G -->|Java project| H[java-project folder]
+    G -->|.NET project| I[dotnet-project folder]
+    G -->|AI Sandbox| J[ai-sandbox folder]
+    G -->|Other| K[Generic folder<br>(no Dev Container)]
+
+    %% ============================
+    %% Dev Container Startup
+    %% ============================
+    H --> L[VS Code detects .devcontainer]
+    I --> L
+    J --> L
+
+    L --> M[Inner Podman starts matching Dev Container]
+
+    M -->|Java| N[java-dev container]
+    M -->|.NET| O[dotnet-dev container]
+    M -->|AI Sandbox| P[ai-sandbox-dev container]
+
+    %% ============================
+    %% Model Container Logic
+    %% ============================
+    P --> Q{Start model containers?}
+
+    Q -->|Yes| R[Start ollama / lmstudio / openai-compatible servers]
+    Q -->|No| S[AI Sandbox ready]
+
+    R --> S
+
+    %% ============================
+    %% Active Development
+    %% ============================
+    N --> T[Active Development]
+    O --> T
+    S --> T
+
+    T --> U([End])

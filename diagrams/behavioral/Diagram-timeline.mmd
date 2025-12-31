@@ -1,0 +1,43 @@
+gantt
+    title Studio Architecture — Environment Timeline
+    dateFormat  YYYY-MM-DD
+    axisFormat  %m/%d
+
+    section Host Layer (Windows 11)
+    Windows Updates / Reboots        :done,    host1, 2025-01-01, 1d
+    Podman Desktop Update Cycle      :active,  host2, 2025-01-15, 7d
+    Host Reset (rare)                :crit,    host3, 2025-12-30, 2d
+
+    section dev-box-vscode (Canonical Workstation)
+    Build dev-box-vscode (initial)   :done,    dv1, 2025-01-02, 2d
+    Rebuild dev-box-vscode           :dv2,     2025-02-01, 1d
+    Update Tooling / Runtimes        :dv3,     2025-03-01, 1d
+    Reset dev-box-vscode (optional)  :dv4,     2025-06-01, 1d
+
+    section Inner Podman Engine
+    Initialize Inner Podman          :done,    pod1, 2025-01-03, 1d
+    Podman System Prune              :pod2,    2025-02-15, 1d
+    Podman Image Cleanup             :pod3,    2025-03-15, 1d
+
+    section Dev Containers (Project Environments)
+    Build java-dev                   :done,    dc1, 2025-01-05, 1d
+    Build dotnet-dev                 :done,    dc2, 2025-01-06, 1d
+    Rebuild Dev Containers           :dc3,     2025-02-10, 1d
+    Reset Dev Containers             :dc4,     2025-04-01, 1d
+
+    section AI Sandbox + Model Containers
+    Build ai-sandbox-dev             :done,    ai1, 2025-01-07, 1d
+    Build Model Containers           :done,    ai2, 2025-01-08, 1d
+    Update Model Images              :ai3,     2025-02-20, 1d
+    Refresh Model Weights            :ai4,     2025-03-20, 1d
+
+    section Documentation Lifecycle
+    Update Architecture Docs         :doc1,    2025-01-10, 1d
+    Add New Diagrams                :doc2,    2025-02-05, 1d
+    Review Glossary                 :doc3,    2025-03-05, 1d
+    Update Bootstrap Guide          :doc4,    2025-04-05, 1d
+
+    section Backup + Recovery
+    Backup Volumes                  :b1,      2025-01-12, 1d
+    Backup Documentation            :b2,      2025-02-12, 1d
+    Full Environment Snapshot       :crit, b3, 2025-06-15, 1d

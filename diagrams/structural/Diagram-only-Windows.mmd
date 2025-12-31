@@ -1,0 +1,20 @@
+flowchart TD
+
+    %% Host Layer
+    A[Windows 11 Host<br><br>- Podman Desktop<br>- Visual Studio<br>- IIS<br>- Windows SDKs<br><br>(Immutable Host / Hypervisor)]
+
+    %% dev-box-vscode
+    A --> B[dev-box-vscode Container<br><br>- Fedora base<br>- VS Code Server<br>- Git, shells, tooling<br>- Podman (inner)<br><br>(Canonical Workstation)]
+
+    %% Inner Podman
+    B --> C[Inner Podman Engine<br>(Runs all Dev Containers and Model Containers)]
+
+    %% Dev Containers
+    C --> D1[java-dev<br>(Java Dev Container)]
+    C --> D2[dotnet-dev<br>(.NET Dev Container)]
+    C --> D3[ai-sandbox-dev<br>(AI Sandbox Dev Container)]
+
+    %% Model Containers under AI Sandbox
+    D3 --> E1[ollama<br>(Model Container)]
+    D3 --> E2[lmstudio<br>(Model Container)]
+    D3 --> E3[openai-compatible servers<br>(Model Containers)]

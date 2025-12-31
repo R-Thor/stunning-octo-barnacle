@@ -1,7 +1,7 @@
 # .NET Project Dev Container  
-Isolated, reproducible .NET development inside the Enterprise environment
+Isolated, reproducible .NET development inside the Studio Architecture
 
-The dotnet-dev Dev Container provides a fully isolated, deterministic environment for building and running .NET applications within the Enterprise architecture. This document describes the structure, tooling, workflows, and best practices for .NET development inside this system.
+The **dotnet‑dev** Dev Container provides a fully isolated, deterministic environment for building and running .NET applications within the Studio Architecture. This document describes the structure, tooling, workflows, and best practices for .NET development inside this system.
 
 ---
 
@@ -13,7 +13,7 @@ The .NET Dev Container exists to:
 - Isolate .NET SDKs and tooling from the host and other projects  
 - Ensure deterministic builds using containerized .NET runtimes  
 - Support debugging and development through VS Code Dev Containers  
-- Integrate cleanly with the Enterprise layered architecture  
+- Integrate cleanly with the Studio Architecture  
 
 The container is disposable, rebuildable, and fully declarative.
 
@@ -21,29 +21,28 @@ The container is disposable, rebuildable, and fully declarative.
 
 # 2. Architectural Placement
 
-The .NET Dev Container runs under the inner Podman instance inside dev-box.
+The .NET Dev Container runs under the **inner Podman** instance inside `dev-box-vscode`.
 
     Windows 11
-      └── WSL2: Debian-Enterprise
-            └── Podman (host)
-                  └── dev-box
-                        └── Podman (inner)
-                              ├── ai-sandbox-dev (Dev Container)
-                              ├── java-dev (Dev Container)
-                              └── dotnet-dev (Dev Container)
+      └── Podman Desktop
+            └── dev-box-vscode
+                  └── Podman (inner)
+                        ├── ai-sandbox-dev
+                        ├── java-dev
+                        └── dotnet-dev
 
 Key points:
 
-- dotnet-dev is a sibling to java-dev and ai-sandbox-dev  
+- dotnet‑dev is a sibling to java‑dev and ai‑sandbox‑dev  
 - It is not nested inside other containers  
 - It uses the same inner Podman as all other Dev Containers  
-- VS Code attaches to dotnet-dev automatically when opening the .NET project folder  
+- VS Code attaches to dotnet‑dev automatically when opening the .NET project folder  
 
 ---
 
 # 3. Container Contents
 
-The dotnet-dev container typically includes:
+The dotnet‑dev container typically includes:
 
 ## .NET Tooling
 - .NET SDK (LTS version)  
@@ -56,7 +55,7 @@ The dotnet-dev container typically includes:
 - Git  
 - Shell utilities  
 - Build tools  
-- Optional: Node.js for frontend or Blazor hybrid projects  
+- Optional: Node.js for hybrid or Blazor projects  
 
 ## VS Code Integration
 - C# Dev Kit  
@@ -91,13 +90,13 @@ A typical .NET project folder looks like:
 
 ## 5.1 Opening the Project
 
-1. Start WSL2  
-2. Start dev-box  
-3. Enter dev-box  
-4. Launch VS Code from inside dev-box  
+1. Start Windows  
+2. Launch Podman Desktop  
+3. Start `dev-box-vscode`  
+4. Connect via VS Code  
 5. Open the .NET project folder  
-6. VS Code detects .devcontainer  
-7. VS Code attaches to dotnet-dev  
+6. VS Code detects `.devcontainer`  
+7. VS Code attaches to `dotnet-dev`  
 
 You are now inside the isolated .NET environment.
 
@@ -183,7 +182,7 @@ These caches are isolated and do not affect other Dev Containers.
 To rebuild:
 
 1. Open the Command Palette  
-2. Run: Dev Containers: Rebuild Container  
+2. Run: **Dev Containers: Rebuild Container**
 
 This ensures:
 
@@ -202,7 +201,7 @@ Containers are disposable — rebuilding is encouraged.
 - Use containerized .NET SDKs  
 - Rebuild the container when dependencies change  
 - Use VS Code tasks for common workflows  
-- Keep the .devcontainer folder declarative and minimal  
+- Keep the `.devcontainer` folder declarative and minimal  
 
 ---
 
@@ -216,4 +215,4 @@ The .NET Dev Container provides:
 - Predictable networking  
 - Zero host pollution  
 
-This document serves as the authoritative reference for .NET development inside the Enterprise architecture.
+This document serves as the authoritative reference for .NET development inside the Studio Architecture.

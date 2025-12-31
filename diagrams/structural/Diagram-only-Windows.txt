@@ -1,0 +1,54 @@
+Studio Architecture — High-Level Diagram (Windows 11 Native, Podman-only)
+
++------------------------------------------------+
+|                Windows 11 Host                 |
+|                                                |
+|  - Podman Desktop                              |
+|  - Visual Studio (Windows-native workloads)    |
+|  - IIS (Windows-native workloads)              |
+|  - Windows SDKs (if required)                  |
+|                                                |
+|  (Immutable Host / Hypervisor)                 |
++------------------------------------------------+
+                     |
+                     v
++------------------------------------------------+
+|            dev-box-vscode Container            |
+|                                                |
+|  - Fedora base                                 |
+|  - VS Code Server                              |
+|  - Git, shells, core tooling                   |
+|  - Podman (inner)                              |
+|                                                |
+|  (Canonical Linux Workstation)                 |
++------------------------------------------------+
+                     |
+                     v
++------------------------------------------------+
+|              Inner Podman Engine               |
+|  (runs all Dev Containers and models)          |
++------------------------------------------------+
+     |                             |
+     |                             |
+     v                             v
++------------------------+   +------------------------+
+|   Project Dev          |   |     AI Sandbox         |
+|   Containers           |   |   Dev Container        |
+|                        |   |                        |
+|  - java-dev            |   |  - ai-sandbox-dev      |
+|  - dotnet-dev          |   |                        |
+|  - (future dev N)      |   |  (AI tools, agents,    |
+|                        |   |   orchestration)       |
++------------------------+   +------------------------+
+                                   |
+                                   v
+                         +------------------------+
+                         |     Model Containers   |
+                         |                        |
+                         |  - ollama              |
+                         |  - lmstudio            |
+                         |  - openai-compatible   |
+                         |    servers             |
+                         |  - (future models)     |
+                         |                        |
+                         +------------------------+

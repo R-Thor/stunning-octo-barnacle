@@ -1,0 +1,48 @@
+flowchart TB
+
+    %% ============================
+    %% Network Layer
+    %% ============================
+    subgraph NET[Inner Podman Network Namespace<br>(Shared Network)]
+        direction TB
+
+        %% Dev Containers
+        JAVA[java-dev<br>Dev Container]
+        DOTNET[dotnet-dev<br>Dev Container]
+        AISANDBOX[ai-sandbox-dev<br>Dev Container]
+
+        %% Model Containers
+        OLLAMA[ollama<br>Model Container]
+        LMSTUDIO[lmstudio<br>Model Container]
+        OAICOMPAT[openai-compatible servers<br>Model Containers]
+
+    end
+
+    %% ============================
+    %% dev-box-vscode
+    %% ============================
+    subgraph DEVBOX[dev-box-vscode<br>(Canonical Workstation)]
+        direction TB
+        IP[Inner Podman Engine]
+    end
+
+    DEVBOX --> NET
+
+    %% ============================
+    %% Connectivity
+    %% ============================
+    JAVA --- NET
+    DOTNET --- NET
+    AISANDBOX --- NET
+
+    AISANDBOX --> OLLAMA
+    AISANDBOX --> LMSTUDIO
+    AISANDBOX --> OAICOMPAT
+
+    JAVA --> OLLAMA
+    JAVA --> LMSTUDIO
+    JAVA --> OAICOMPAT
+
+    DOTNET --> OLLAMA
+    DOTNET --> LMSTUDIO
+    DOTNET --> OAICOMPAT

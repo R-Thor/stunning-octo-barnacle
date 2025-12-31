@@ -1,0 +1,62 @@
+flowchart TB
+
+    %% ============================
+    %% Volume Definitions
+    %% ============================
+    subgraph V[Volumes]
+        direction TB
+        V_HOME[devbox-home<br>(Persistent home for dev-box-vscode)]
+        V_WORKSPACE[workspace-data<br>(Project folders, shared code)]
+        V_JAVA_CACHE[java-cache<br>(Maven/Gradle caches)]
+        V_DOTNET_CACHE[dotnet-cache<br>(NuGet caches)]
+        V_MODELS[model-weights<br>(LLM weights, embeddings)]
+        V_SANDBOX[sandbox-data<br>(AI Sandbox scripts, indexes)]
+    end
+
+    %% ============================
+    %% dev-box-vscode
+    %% ============================
+    subgraph DEVBOX[dev-box-vscode<br>(Canonical Workstation)]
+        direction TB
+        D1[VS Code Server]
+        D2[Git, Shells, Tooling]
+        D3[Inner Podman Engine]
+    end
+
+    DEVBOX --- V_HOME
+    DEVBOX --- V_WORKSPACE
+
+    %% ============================
+    %% Dev Containers
+    %% ============================
+    subgraph DEVCONTAINERS[Project Dev Containers]
+        direction TB
+        JAVA[java-dev]
+        DOTNET[dotnet-dev]
+        AISANDBOX[ai-sandbox-dev]
+    end
+
+    JAVA --- V_WORKSPACE
+    JAVA --- V_JAVA_CACHE
+
+    DOTNET --- V_WORKSPACE
+    DOTNET --- V_DOTNET_CACHE
+
+    AISANDBOX --- V_WORKSPACE
+    AISANDBOX --- V_SANDBOX
+
+    %% ============================
+    %% Model Containers
+    %% ============================
+    subgraph MODELS[Model Containers]
+        direction TB
+        OLLAMA[ollama]
+        LMSTUDIO[lmstudio]
+        OAICOMPAT[openai-compatible servers]
+    end
+
+    AISANDBOX --> MODELS
+
+    OLLAMA --- V_MODELS
+    LMSTUDIO --- V_MODELS
+    OAICOMPAT --- V_MODELS

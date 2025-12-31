@@ -1,0 +1,97 @@
+classDiagram
+    %% ============================
+    %% Top-Level Host
+    %% ============================
+    class WindowsHost {
+        +Podman Desktop
+        +Visual Studio (Windows-native)
+        +IIS
+        +Windows SDKs
+        <<immutable>>
+    }
+
+    %% ============================
+    %% dev-box-vscode Workstation
+    %% ============================
+    class DevBoxVSCode {
+        +Fedora base
+        +VS Code Server
+        +Git, shells, tooling
+        +Inner Podman
+        <<canonical workstation>>
+    }
+
+    WindowsHost --> DevBoxVSCode : runs
+
+    %% ============================
+    %% Inner Podman Engine
+    %% ============================
+    class InnerPodman {
+        +Runs Dev Containers
+        +Runs Model Containers
+        +Shared network namespace
+        <<container engine>>
+    }
+
+    DevBoxVSCode --> InnerPodman : contains
+
+    %% ============================
+    %% Dev Containers
+    %% ============================
+    class JavaDev {
+        +JDK
+        +Maven/Gradle
+        +Java Debug Adapter
+        <<dev container>>
+    }
+
+    class DotNetDev {
+        +.NET SDK
+        +NuGet
+        +C# Dev Kit
+        <<dev container>>
+    }
+
+    class AISandboxDev {
+        +Python/Node (optional)
+        +Agent frameworks
+        +Model orchestration scripts
+        <<dev container>>
+    }
+
+    InnerPodman --> JavaDev : runs
+    InnerPodman --> DotNetDev : runs
+    InnerPodman --> AISandboxDev : runs
+
+    %% ============================
+    %% Model Containers
+    %% ============================
+    class ModelContainer {
+        <<abstract>>
+        +Provides inference API
+    }
+
+    class Ollama {
+        +Local LLMs
+        +Embeddings
+        <<model container>>
+    }
+
+    class LMStudio {
+        +GGUF models
+        +OpenAI-compatible API
+        <<model container>>
+    }
+
+    class OpenAICompat {
+        +Custom servers
+        +FastAPI / TGI / llama.cpp
+        <<model container>>
+    }
+
+    ModelContainer <|-- Ollama
+    ModelContainer <|-- LMStudio
+    ModelContainer <|-- OpenAICompat
+
+    AISandboxDev --> ModelContainer : orchestrates
+    InnerPodman --> ModelContainer : runs

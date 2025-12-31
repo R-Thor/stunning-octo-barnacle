@@ -1,7 +1,8 @@
 # AI Sandbox  
-A dedicated Dev Container for local model servers, agent frameworks, and AI experimentation
+A dedicated Dev Container for local model servers, agent frameworks, and AI experimentation  
+(Studio Architecture — Windows‑native, Podman‑only)
 
-The **AI Sandbox** is a core component of the Enterprise environment. It provides a fully isolated Dev Container designed specifically for running local model servers, experimenting with agent frameworks, and building AI-driven tools — all without contaminating project Dev Containers or the host system.
+The **AI Sandbox** is a core component of the Studio Architecture. It provides a fully isolated Dev Container designed specifically for running local model servers, experimenting with agent frameworks, and building AI‑driven tools — all without contaminating project Dev Containers or the Windows host.
 
 This document describes the purpose, structure, workflows, and model container orchestration of the AI Sandbox.
 
@@ -11,12 +12,12 @@ This document describes the purpose, structure, workflows, and model container o
 
 The AI Sandbox exists to:
 
-- Provide a **controlled environment** for AI experimentation  
-- Run **local model servers** (Ollama, LM Studio, OpenAI-compatible servers)  
-- Support **agent frameworks** and AI tooling  
-- Keep AI workloads **isolated** from project Dev Containers  
-- Maintain **deterministic, reproducible AI environments**  
-- Serve as the **logical home** for all model containers  
+- Provide a controlled environment for AI experimentation  
+- Run local model servers (Ollama, LM Studio, OpenAI‑compatible servers)  
+- Support agent frameworks and AI tooling  
+- Keep AI workloads isolated from project Dev Containers  
+- Maintain deterministic, reproducible AI environments  
+- Serve as the logical home for all model containers  
 
 The AI Sandbox is intentionally separated from Java, .NET, and other project Dev Containers.
 
@@ -24,28 +25,26 @@ The AI Sandbox is intentionally separated from Java, .NET, and other project Dev
 
 # 2. Architectural Placement
 
-The AI Sandbox is a Dev Container running under the **inner Podman** instance inside `dev-box`.
+The AI Sandbox is a Dev Container running under the **inner Podman** instance inside `dev-box-vscode`.
 
     Windows 11
-      └── WSL2: Debian-Enterprise
-            └── Podman (host)
-                  └── dev-box
-                        └── Podman (inner)
-                              ├── ai-sandbox-dev (Dev Container)
-                              │     └── [Model Containers]
-                              │           ├── ollama
-                              │           ├── lmstudio
-                              │           └── openai-compatible servers
-                              ├── java-dev (Dev Container)
-                              └── dotnet-dev (Dev Container)
+      └── Podman Desktop
+            └── dev-box-vscode
+                  └── Podman (inner)
+                        ├── ai-sandbox-dev (Dev Container)
+                        │     └── [Model Containers]
+                        │           ├── ollama
+                        │           ├── lmstudio
+                        │           └── openai-compatible servers
+                        ├── java-dev (Dev Container)
+                        └── dotnet-dev (Dev Container)
 
 ### Key Points
 
-- The AI Sandbox is **not** a Podman host  
-- It is a **Dev Container**  
-- All model containers run under the **same inner Podman** as the project Dev Containers  
-- Model containers are **logically grouped** under the AI Sandbox  
-- Project Dev Containers do **not** run model servers  
+- The AI Sandbox is a Dev Container, not a Podman host  
+- All model containers run under the same inner Podman  
+- Model containers are logically grouped under the AI Sandbox  
+- Project Dev Containers do not run model servers  
 
 ---
 
@@ -80,7 +79,7 @@ Everything inside this container is isolated from Java and .NET Dev Containers.
 
 Model containers run under **inner Podman**, not inside the AI Sandbox container itself.
 
-They are siblings to project Dev Containers but are **logically associated** with the AI Sandbox.
+They are siblings to project Dev Containers but are logically associated with the AI Sandbox.
 
 ## 4.1 Model Container Layout
 
@@ -92,7 +91,7 @@ They are siblings to project Dev Containers but are **logically associated** wit
 
 ## 4.2 Supported Model Containers
 
-### **Ollama**
+### Ollama
 Runs local LLMs with GPU/CPU acceleration.  
 Used for:
 
@@ -100,19 +99,19 @@ Used for:
 - Chat models  
 - Local inference  
 
-### **LM Studio**
+### LM Studio
 Runs GGUF models with a local API.  
 Used for:
 
 - OpenAI-compatible inference  
 - Local model experimentation  
 
-### **OpenAI-Compatible Servers**
+### OpenAI-Compatible Servers
 Examples:
 
-- `llama-cpp-python` server mode  
-- `text-generation-inference`  
-- Custom FastAPI-based model servers  
+- llama-cpp-python server mode  
+- text-generation-inference  
+- custom FastAPI-based model servers  
 
 Used for:
 
@@ -134,8 +133,8 @@ This ensures:
 
 Typical ports:
 
-- Ollama: `11434`  
-- LM Studio: `1234` (varies)  
+- Ollama: 11434  
+- LM Studio: 1234 (varies)  
 - Custom servers: user-defined  
 
 ---
@@ -161,10 +160,10 @@ These volumes are:
 
 ## 7.1 Starting the AI Sandbox
 
-1. Start WSL2  
-2. Start `dev-box`  
-3. Enter `dev-box`  
-4. Launch VS Code from inside `dev-box`  
+1. Start Windows  
+2. Launch Podman Desktop  
+3. Start `dev-box-vscode`  
+4. Connect via VS Code  
 5. Open the `ai-sandbox` folder  
 6. VS Code attaches to `ai-sandbox-dev`  
 
@@ -193,18 +192,18 @@ Project Dev Containers may optionally consume model APIs if configured.
 
 # 8. Design Principles
 
-## 8.1 Isolation
+## Isolation
 AI workloads are isolated from project Dev Containers.
 
-## 8.2 Reproducibility
+## Reproducibility
 All model containers and the AI Sandbox Dev Container are declarative and rebuildable.
 
-## 8.3 Predictability
+## Predictability
 No nested Podman hosts.  
 No implicit networking.  
 No hidden dependencies.
 
-## 8.4 AI-First Documentation
+## AI‑First Documentation
 All documentation is structured for AI assistants to:
 
 - Parse  
@@ -235,7 +234,7 @@ All extensions must preserve:
 
 # 10. Summary
 
-The AI Sandbox is the dedicated environment for all AI experimentation within the Enterprise architecture. It provides:
+The AI Sandbox is the dedicated environment for all AI experimentation within the Studio Architecture. It provides:
 
 - A clean Dev Container  
 - A predictable model container layout  

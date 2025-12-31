@@ -1,0 +1,50 @@
+flowchart LR
+
+    %% ============================
+    %% Layer 1 — Windows Host
+    %% ============================
+    subgraph L1[Layer 1 — Windows 11 Host]
+        direction TB
+        W1[Podman Desktop]
+        W2[Visual Studio (Windows-native)]
+        W3[IIS]
+        W4[Windows SDKs]
+    end
+
+    %% ============================
+    %% Layer 2 — Canonical Workstation
+    %% ============================
+    subgraph L2[Layer 2 — dev-box-vscode (Canonical Workstation)]
+        direction TB
+        D1[Fedora Base]
+        D2[VS Code Server]
+        D3[Git, Shells, Tooling]
+        D4[Inner Podman Engine]
+    end
+
+    %% ============================
+    %% Layer 3 — Dev Containers
+    %% ============================
+    subgraph L3[Layer 3 — Dev Containers]
+        direction TB
+        C1[java-dev<br>JDK, Maven/Gradle, Debugger]
+        C2[dotnet-dev<br>.NET SDK, NuGet, Debugger]
+        C3[ai-sandbox-dev<br>Agents, Python/Node, Orchestration]
+    end
+
+    %% ============================
+    %% Layer 4 — Model Containers
+    %% ============================
+    subgraph L4[Layer 4 — Model Containers]
+        direction TB
+        M1[ollama<br>Local LLMs & Embeddings]
+        M2[lmstudio<br>GGUF Models, OpenAI API]
+        M3[openai-compatible servers<br>FastAPI / TGI / llama.cpp]
+    end
+
+    %% ============================
+    %% Connections
+    %% ============================
+    L1 --> L2
+    L2 --> L3
+    L3 --> L4

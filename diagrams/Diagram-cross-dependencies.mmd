@@ -1,0 +1,96 @@
+flowchart TB
+
+    %% ============================
+    %% Root
+    %% ============================
+    ROOT[Diagram Suite<br>Cross‑Diagram Dependencies]
+
+    %% ============================
+    %% Structural Foundations
+    %% ============================
+    subgraph STRUCT[Structural Foundations]
+        LAYER[Diagram-layered-architecture]
+        DEPLOY[Diagram-deployment]
+        NET[Diagram-network-topology]
+        VOL[Diagram-volume-mounts]
+        PORT[Diagram-port-mappings]
+        WS[Diagram-workspace-structure]
+        VOLNET[Diagram-volume-network-combined]
+        MEGA[Diagram-mega-architecture]
+    end
+
+    %% ============================
+    %% Behavioral Layer
+    %% ============================
+    subgraph BEHAV[Behavioral Diagrams]
+        SEQ[Diagram-sequence]
+        STATE[Diagram-state]
+        FLOW[Diagram-flowchart]
+        GANTT[Diagram-gantt]
+        LIFE[Diagram-container-lifecycle]
+        DECIDE[Diagram-decision-tree]
+        TIME[Diagram-timeline]
+    end
+
+    %% ============================
+    %% Advanced Layer
+    %% ============================
+    subgraph ADV[Advanced Diagrams]
+        DFD[Diagram-data-flow]
+        SEC[Diagram-security-boundaries]
+    end
+
+    %% ============================
+    %% Specialized Layer
+    %% ============================
+    subgraph SPEC[Specialized Diagrams]
+        AITOPO[Diagram-ai-sandbox-model-topology]
+        ENV[Diagram-env-vars]
+    end
+
+    %% ============================
+    %% Dependencies
+    %% ============================
+
+    ROOT --> STRUCT
+    ROOT --> BEHAV
+    ROOT --> ADV
+    ROOT --> SPEC
+
+    %% Structural → Behavioral
+    LAYER --> SEQ
+    LAYER --> STATE
+    LAYER --> FLOW
+    LAYER --> LIFE
+    LAYER --> DECIDE
+
+    NET --> SEQ
+    NET --> DFD
+    NET --> SEC
+
+    VOL --> LIFE
+    VOL --> VOLNET
+    VOL --> MEGA
+
+    PORT --> SEQ
+    PORT --> AITOPO
+
+    WS --> FLOW
+    WS --> SEQ
+
+    VOLNET --> MEGA
+
+    %% Behavioral → Advanced
+    SEQ --> DFD
+    LIFE --> SEC
+    DECIDE --> SEC
+    TIME --> LIFE
+
+    %% Advanced → Specialized
+    DFD --> AITOPO
+    SEC --> AITOPO
+    SEC --> ENV
+
+    %% Specialized → Mega
+    AITOPO --> MEGA
+    ENV --> MEGA

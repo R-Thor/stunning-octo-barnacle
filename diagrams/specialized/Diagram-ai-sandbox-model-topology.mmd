@@ -1,0 +1,72 @@
+flowchart TB
+
+    %% ============================
+    %% AI Sandbox Dev Container
+    %% ============================
+    subgraph AISANDBOX[ai-sandbox-dev<br>(AI Tools + Orchestration)]
+        direction TB
+
+        AITOOLS[AI Tools / Agents<br>- LangChain / LlamaIndex<br>- Custom Agents<br>- Routing Logic]
+        AIPROXY[Model Router / Proxy<br>- OpenAI API Router<br>- Load Balancer<br>- Token Streaming]
+        AICONFIG[Config + Scripts<br>- Model startup scripts<br>- Environment configs]
+    end
+
+    %% ============================
+    %% Model Containers (Inner Podman)
+    %% ============================
+    subgraph MODELS[Model Containers<br>(Inner Podman Namespace)]
+        direction TB
+
+        subgraph OLLAMA[ollama Container]
+            OLLAMA_SRV[LLM Server<br>Port 11434]
+            OLLAMA_VOL[(Model Weights Volume)]
+        end
+
+        subgraph LMSTUDIO[lmstudio Container]
+            LMSTUDIO_SRV[Inference Server<br>Port 1234]
+            LMSTUDIO_VOL[(Model Cache Volume)]
+        end
+
+        subgraph OAICOMPAT[OpenAI-Compatible Servers]
+            OAICOMPAT_SRV[OpenAI API Server<br>Port 8000+]
+            OAICOMPAT_VOL[(Embeddings / Index Volumes)]
+        end
+    end
+
+    %% ============================
+    %% Project Dev Containers
+    %% ============================
+    subgraph DEVCONTAINERS[Project Dev Containers<br>(Consumers of AI Services)]
+        direction TB
+        JAVA[java-dev<br>Spring / Maven / Gradle]
+        DOTNET[dotnet-dev<br>ASP.NET / C#]
+    end
+
+    %% ============================
+    %% Connections
+    %% ============================
+
+    %% AI Sandbox orchestrates model containers
+    AITOOLS -->|Start/Stop/Manage| OLLAMA_SRV
+    AITOOLS -->|Start/Stop/Manage| LMSTUDIO_SRV
+    AITOOLS -->|Start/Stop/Manage| OAICOMPAT_SRV
+
+    %% AI Sandbox routes inference requests
+    AIPROXY -->|HTTP / gRPC| OLLAMA_SRV
+    AIPROXY -->|HTTP / gRPC| LMSTUDIO_SRV
+    AIPROXY -->|HTTP / gRPC| OAICOMPAT_SRV
+
+    %% Project containers call AI Sandbox
+    JAVA -->|OpenAI API / HTTP| AIPROXY
+    DOTNET -->|OpenAI API / HTTP| AIPROXY
+
+    %% Volumes
+    OLLAMA_SRV -.-> OLLAMA_VOL
+    LMSTUDIO_SRV -.-> LMSTUDIO_VOL
+    OAICOMPAT_SRV -.-> OAICOMPAT_VOL
+
+    %% ============================
+    %% Notes
+    %% ============================
+    classDef boundary fill:#f0f0f0,stroke:#333,stroke-width:1px;
+    class AISANDBOX,MODELS,DEVCONTAINERS boundary;

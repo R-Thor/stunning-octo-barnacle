@@ -1,0 +1,51 @@
+flowchart TB
+
+    %% ============================
+    %% Root
+    %% ============================
+    TAX[Diagram Suite<br>Taxonomy]
+
+    %% ============================
+    %% Categories
+    %% ============================
+    subgraph STRUCT[Structural Diagrams]
+        D_ASCII[Diagram-only-Windows.ASCII]
+        D_LAYER[Diagram-layered-architecture.mmd]
+        D_DEPLOY[Diagram-deployment.mmd]
+        D_CLASS[Diagram-class.mmd]
+        D_ERD[Diagram-erd.mmd]
+        D_NET[Diagram-network-topology.mmd]
+        D_VOL[Diagram-volume-mounts.mmd]
+        D_PORT[Diagram-port-mappings.mmd]
+        D_WS[Diagram-workspace-structure.mmd]
+        D_VOLNET[Diagram-volume-network-combined.mmd]
+        D_MEGA[Diagram-mega-architecture.mmd]
+    end
+
+    subgraph BEHAV[Behavioral Diagrams]
+        D_SEQ[Diagram-sequence.mmd]
+        D_STATE[Diagram-state.mmd]
+        D_FLOW[Diagram-flowchart.mmd]
+        D_GANTT[Diagram-gantt.mmd]
+        D_LIFE[Diagram-container-lifecycle.mmd]
+        D_DECIDE[Diagram-decision-tree.mmd]
+        D_TIME[Diagram-timeline.mmd]
+    end
+
+    subgraph ADV[Advanced Diagrams]
+        D_DFD[Diagram-data-flow.mmd]
+        D_SEC[Diagram-security-boundaries.mmd]
+    end
+
+    subgraph SPEC[Specialized Diagrams]
+        D_AITOPO[Diagram-ai-sandbox-model-topology.mmd]
+        D_ENV[Diagram-env-vars.mmd]
+    end
+
+    %% ============================
+    %% Connections
+    %% ============================
+    TAX --> STRUCT
+    TAX --> BEHAV
+    TAX --> ADV
+    TAX --> SPEC

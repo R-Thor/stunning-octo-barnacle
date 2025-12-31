@@ -1,0 +1,123 @@
+flowchart TB
+
+    %% ============================
+    %% Host Layer (No Dev Env Vars)
+    %% ============================
+    subgraph HOST[Windows 11 Host<br>(No development env vars)]
+        direction TB
+        HOSTENV[Minimal Host Env<br>- PATH (Windows)<br>- System32 vars<br>- No runtimes<br>- No SDKs]
+    end
+
+    %% ============================
+    %% dev-box-vscode Environment
+    %% ============================
+    subgraph DEVBOX[dev-box-vscode<br>(Canonical Workstation Env)]
+        direction TB
+
+        DEVBOX_ENV[dev-box-vscode Env Vars<br>
+        - PATH (Linux)<br>
+        - PODMAN_USER=rootless<br>
+        - PODMAN_MACHINE=inner<br>
+        - VSCODE_SERVER_ROOT=/usr/local/vscode<br>
+        - WORKSPACE=/workspace<br>
+        - HOME=/home/dev<br>
+        - SHELL=/bin/bash]
+
+        DEVBOX_SECRETS[(Optional Secrets)<br>
+        - OPENAI_API_KEY<br>
+        - ANTHROPIC_API_KEY<br>
+        - CUSTOM_MODEL_KEYS]
+    end
+
+    HOST --> DEVBOX
+
+    %% ============================
+    %% Inner Podman Namespace
+    %% ============================
+    subgraph INNERPOD[Inner Podman Engine<br>(Shared Namespace)]
+        direction TB
+        PODENV[Shared Podman Vars<br>
+        - PODMAN_HOST=unix:///run/podman/podman.sock<br>
+        - CONTAINERS_CONF=/etc/containers/containers.conf]
+    end
+
+    DEVBOX --> INNERPOD
+
+    %% ============================
+    %% Dev Containers
+    %% ============================
+    subgraph DEVCONTAINERS[Project Dev Containers]
+        direction TB
+
+        subgraph JAVA[java-dev Env Vars]
+            JAVA_ENV[Env Vars:<br>
+            - JAVA_HOME=/usr/lib/jvm/default<br>
+            - MAVEN_OPTS<br>
+            - GRADLE_USER_HOME=/home/dev/.gradle<br>
+            - APP_PORT=8080<br>
+            - MODEL_ENDPOINT=http://ai-sandbox-dev:8000]
+        end
+
+        subgraph DOTNET[dotnet-dev Env Vars]
+            DOTNET_ENV[Env Vars:<br>
+            - DOTNET_ROOT=/usr/share/dotnet<br>
+            - ASPNETCORE_URLS=http://0.0.0.0:5000<br>
+            - NUGET_PACKAGES=/home/dev/.nuget<br>
+            - MODEL_ENDPOINT=http://ai-sandbox-dev:8000]
+        end
+
+        subgraph AISANDBOX[ai-sandbox-dev Env Vars]
+            AISANDBOX_ENV[Env Vars:<br>
+            - SANDBOX_HOME=/sandbox<br>
+            - MODEL_ROUTER_PORT=8000<br>
+            - MODEL_CONFIG_PATH=/sandbox/config<br>
+            - ENABLE_LLM_ROUTING=true]
+        end
+    end
+
+    INNERPOD --> DEVCONTAINERS
+
+    %% ============================
+    %% Model Containers
+    %% ============================
+    subgraph MODELS[Model Containers]
+        direction TB
+
+        subgraph OLLAMA[ollama Container]
+            OLLAMA_ENV[Env Vars:<br>
+            - OLLAMA_MODELS=/models<br>
+            - OLLAMA_PORT=11434<br>
+            - OLLAMA_NUM_THREADS=4]
+        end
+
+        subgraph LMSTUDIO[lmstudio Container]
+            LMSTUDIO_ENV[Env Vars:<br>
+            - LMSTUDIO_MODELS=/models<br>
+            - LMSTUDIO_PORT=1234<br>
+            - LMSTUDIO_DEVICE=cpu]
+        end
+
+        subgraph OAICOMPAT[OpenAI-Compatible Servers]
+            OAICOMPAT_ENV[Env Vars:<br>
+            - API_PORT=8000<br>
+            - MODEL_PATH=/models<br>
+            - EMBEDDINGS_PATH=/embeddings<br>
+            - MAX_TOKENS=4096]
+        end
+    end
+
+    AISANDBOX --> MODELS
+
+    %% ============================
+    %% Shared / Inherited Vars
+    %% ============================
+    JAVA_ENV -->|Reads| DEVBOX_SECRETS
+    DOTNET_ENV -->|Reads| DEVBOX_SECRETS
+    AISANDBOX_ENV -->|Reads| DEVBOX_SECRETS
+
+    AITOOLS -.->|Uses MODEL_ENDPOINT| JAVA_ENV
+    AITOOLS -.->|Uses MODEL_ENDPOINT| DOTNET_ENV
+
+    %% Styling
+    classDef boundary fill:#f0f0f0,stroke:#333,stroke-width:1px;
+    class HOST,DEVBOX,INNERPOD,DEVCONTAINERS,MODELS boundary;

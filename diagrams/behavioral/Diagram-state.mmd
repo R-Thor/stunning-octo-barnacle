@@ -1,0 +1,106 @@
+stateDiagram-v2
+    [*] --> WindowsHost_Starting
+
+    %% ============================
+    %% Windows Host
+    %% ============================
+    state WindowsHost_Starting {
+        [*] --> Booting
+        Booting --> HostReady : Podman Desktop available
+    }
+
+    HostReady --> DevBox_Starting : Start dev-box-vscode
+
+    %% ============================
+    %% dev-box-vscode
+    %% ============================
+    state DevBox_Starting {
+        [*] --> PullingImage
+        PullingImage --> CreatingContainer
+        CreatingContainer --> DevBoxRunning : VS Code Server active
+    }
+
+    DevBoxRunning --> InnerPodman_Starting : Initialize inner Podman
+
+    %% ============================
+    %% Inner Podman
+    %% ============================
+    state InnerPodman_Starting {
+        [*] --> Initializing
+        Initializing --> InnerPodmanReady
+    }
+
+    %% ============================
+    %% Dev Containers
+    %% ============================
+    InnerPodmanReady --> ProjectSelection : Developer opens folder
+
+    state ProjectSelection {
+        [*] --> JavaProject : java-project folder opened
+        [*] --> DotNetProject : dotnet-project folder opened
+        [*] --> AISandboxProject : ai-sandbox folder opened
+    }
+
+    JavaProject --> JavaDev_Starting
+    DotNetProject --> DotNetDev_Starting
+    AISandboxProject --> AISandboxDev_Starting
+
+    %% Java Dev Container
+    state JavaDev_Starting {
+        [*] --> Creating
+        Creating --> JavaDevRunning : VS Code attached
+    }
+
+    %% .NET Dev Container
+    state DotNetDev_Starting {
+        [*] --> Creating
+        Creating --> DotNetDevRunning : VS Code attached
+    }
+
+    %% AI Sandbox Dev Container
+    state AISandboxDev_Starting {
+        [*] --> Creating
+        Creating --> AISandboxDevRunning : AI tools available
+    }
+
+    %% ============================
+    %% Model Containers
+    %% ============================
+    AISandboxDevRunning --> ModelContainers_Starting : Start model servers
+
+    state ModelContainers_Starting {
+        [*] --> StartingOllama
+        [*] --> StartingLMStudio
+        [*] --> StartingOpenAICompat
+
+        StartingOllama --> ModelContainersReady
+        StartingLMStudio --> ModelContainersReady
+        StartingOpenAICompat --> ModelContainersReady
+    }
+
+    ModelContainersReady --> ActiveDevelopment
+
+    %% ============================
+    %% Active Development
+    %% ============================
+    state ActiveDevelopment {
+        [*] --> EditingCode
+        EditingCode --> RunningBuilds
+        RunningBuilds --> Debugging
+        Debugging --> QueryingModels
+        QueryingModels --> EditingCode
+    }
+
+    %% ============================
+    %% Shutdown
+    %% ============================
+    ActiveDevelopment --> Shutdown : Developer stops work
+
+    state Shutdown {
+        [*] --> StopDevContainers
+        StopDevContainers --> StopModelContainers
+        StopModelContainers --> StopDevBox
+        StopDevBox --> SystemIdle
+    }
+
+    SystemIdle --> [*]

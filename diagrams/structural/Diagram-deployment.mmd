@@ -1,0 +1,59 @@
+flowchart TB
+
+    %% ============================
+    %% Windows Host Layer
+    %% ============================
+    subgraph Windows11Host [Windows 11 Host]
+        direction TB
+        PD[Podman Desktop]
+        VS[Visual Studio (Windows-native)]
+        IIS[IIS]
+        SDK[Windows SDKs]
+    end
+
+    %% ============================
+    %% dev-box-vscode Workstation
+    %% ============================
+    subgraph DevBox [dev-box-vscode (Canonical Workstation)]
+        direction TB
+        FED[Fedora Base Image]
+        VSC[VS Code Server]
+        TOOLS[Git, Shells, Tooling]
+        IP[Inner Podman Engine]
+    end
+
+    Windows11Host --> DevBox
+
+    %% ============================
+    %% Dev Containers
+    %% ============================
+    subgraph DevContainers [Project Dev Containers]
+        direction TB
+        JAVA[java-dev<br>JDK, Maven/Gradle, Debugger]
+        DOTNET[dotnet-dev<br>.NET SDK, NuGet, Debugger]
+    end
+
+    IP --> DevContainers
+
+    %% ============================
+    %% AI Sandbox
+    %% ============================
+    subgraph AISandbox [AI Sandbox Dev Container]
+        direction TB
+        AIDEV[ai-sandbox-dev<br>Python/Node, Agents, Orchestration]
+    end
+
+    IP --> AISandbox
+
+    %% ============================
+    %% Model Containers
+    %% ============================
+    subgraph ModelContainers [Model Containers]
+        direction TB
+        OLLAMA[ollama<br>Local LLMs & Embeddings]
+        LMSTUDIO[lmstudio<br>GGUF Models, OpenAI API]
+        OAICOMPAT[openai-compatible servers<br>FastAPI / TGI / llama.cpp]
+    end
+
+    AIDEV --> ModelContainers
+    IP --> ModelContainers

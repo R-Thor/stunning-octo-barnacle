@@ -1,0 +1,30 @@
+gantt
+    dateFormat  HH:mm
+    axisFormat  %H:%M
+    title Studio Architecture — Startup Timeline
+
+    section Windows Host
+    Windows Boot                :done,    winboot,     00:00, 00:10
+    Podman Desktop Launch       :active,  podman,      00:10, 00:20
+
+    section dev-box-vscode
+    Pull dev-box-vscode Image   :         pullimg,     00:20, 00:15
+    Create dev-box-vscode       :         createbox,   00:35, 00:10
+    Start VS Code Server        :         vscodesrv,   00:45, 00:10
+
+    section Inner Podman
+    Initialize Inner Podman     :         innerpod,    00:55, 00:10
+
+    section Project Dev Containers
+    Detect Project Folder       :         detectproj,  01:05, 00:05
+    Start java-dev (if Java)    :         javadev,     01:10, 00:10
+    Start dotnet-dev (if .NET)  :         dotnetdev,   01:10, 00:10
+    Start ai-sandbox-dev        :         sandboxdev,  01:10, 00:10
+
+    section Model Containers
+    Start Ollama                :         ollama,      01:20, 00:10
+    Start LM Studio             :         lmstudio,    01:20, 00:10
+    Start OpenAI-Compatible     :         oai,         01:20, 00:10
+
+    section Ready
+    Active Development Begins   :milestone, ready,     01:30, 00:00

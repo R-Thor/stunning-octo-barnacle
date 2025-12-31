@@ -1,0 +1,124 @@
+erDiagram
+
+    %% ============================
+    %% Host Layer
+    %% ============================
+    WINDOWS_HOST {
+        string name
+        string role
+        string components
+    }
+
+    PODMAN_DESKTOP {
+        string engine
+        string manages_images
+        string manages_volumes
+        string manages_networks
+    }
+
+    WINDOWS_HOST ||--|| PODMAN_DESKTOP : "runs"
+
+    %% ============================
+    %% dev-box-vscode Workstation
+    %% ============================
+    DEV_BOX_VSCODE {
+        string base_image
+        string vscode_server
+        string tooling
+        string inner_podman
+    }
+
+    PODMAN_DESKTOP ||--o{ DEV_BOX_VSCODE : "starts"
+
+    %% ============================
+    %% Inner Podman Engine
+    %% ============================
+    INNER_PODMAN {
+        string container_engine
+        string shared_network_namespace
+        string manages_dev_containers
+        string manages_model_containers
+    }
+
+    DEV_BOX_VSCODE ||--|| INNER_PODMAN : "contains"
+
+    %% ============================
+    %% Dev Containers
+    %% ============================
+    JAVA_DEV {
+        string jdk
+        string build_tools
+        string debugger
+    }
+
+    DOTNET_DEV {
+        string dotnet_sdk
+        string nuget
+        string debugger
+    }
+
+    AI_SANDBOX_DEV {
+        string python_node
+        string agent_frameworks
+        string orchestration_scripts
+    }
+
+    INNER_PODMAN ||--o{ JAVA_DEV : "runs"
+    INNER_PODMAN ||--o{ DOTNET_DEV : "runs"
+    INNER_PODMAN ||--o{ AI_SANDBOX_DEV : "runs"
+
+    %% ============================
+    %% Model Containers
+    %% ============================
+    MODEL_CONTAINER {
+        string type
+        string api
+    }
+
+    OLLAMA {
+        string llm_support
+        string embeddings
+    }
+
+    LMSTUDIO {
+        string gguf_models
+        string openai_api
+    }
+
+    OPENAI_COMPAT {
+        string server_type
+        string framework
+    }
+
+    MODEL_CONTAINER ||--|{ OLLAMA : "specializes"
+    MODEL_CONTAINER ||--|{ LMSTUDIO : "specializes"
+    MODEL_CONTAINER ||--|{ OPENAI_COMPAT : "specializes"
+
+    AI_SANDBOX_DEV ||--o{ MODEL_CONTAINER : "orchestrates"
+    INNER_PODMAN ||--o{ MODEL_CONTAINER : "runs"
+
+    %% ============================
+    %% Volumes
+    %% ============================
+    VOLUME {
+        string name
+        string purpose
+    }
+
+    JAVA_DEV ||--o{ VOLUME : "uses"
+    DOTNET_DEV ||--o{ VOLUME : "uses"
+    MODEL_CONTAINER ||--o{ VOLUME : "stores_models"
+
+    %% ============================
+    %% Networks
+    %% ============================
+    NETWORK {
+        string name
+        string scope
+    }
+
+    INNER_PODMAN ||--|| NETWORK : "provides"
+    JAVA_DEV ||--|| NETWORK : "shares"
+    DOTNET_DEV ||--|| NETWORK : "shares"
+    AI_SANDBOX_DEV ||--|| NETWORK : "shares"
+    MODEL_CONTAINER ||--|| NETWORK : "shares"
