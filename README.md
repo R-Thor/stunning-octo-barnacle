@@ -4,76 +4,95 @@
 A fully isolated, reproducible, AI‑ready development system  
 (Windows 11 Native, Podman‑only)
 
-The **Studio Architecture** is a structured, deterministic development environment designed for engineers who value isolation, reproducibility, and clean separation of concerns. It provides a complete workflow for running multiple project Dev Containers, an AI Sandbox with local model servers, and a unified Podman‑based architecture that ensures zero host pollution.
+The **Studio Architecture** is an abstract, container‑orchestrated development platform designed to host **any** Dev Container: labs, proofs of concept, sandboxes, experiments, training environments, or full project workspaces. It provides a deterministic, Windows‑native environment with strict isolation, reproducibility, and zero host pollution.
 
-This repository contains all documentation, diagrams, and workflows needed to understand, maintain, and extend the system.
+The Studio is not tied to any specific language or project.  
+Java, .NET, and the AI Sandbox are **examples**, not fixed components.
+
+This repository contains all documentation, diagrams, and workflows needed to understand, maintain, and extend the Studio.
 
 ---
 
 # 1. Overview
 
-The Studio Architecture is built on a clean, Windows‑native layered model:
+The Studio Architecture is built on a clean, layered model:
 
 - Windows 11  
 - Podman Desktop  
-- dev‑box‑vscode (Canonical Workstation)  
+- dev‑box-vscode (Canonical Workstation)  
 - Podman (inner)  
-- Multiple Dev Containers for projects  
-- AI Sandbox Dev Container with model containers  
+- Arbitrary Dev Containers (labs, POCs, sandboxes, projects)  
+- Optional AI Sandbox Dev Container with model servers  
 
 This structure ensures:
 
 - Deterministic builds  
-- Fully isolated project environments  
+- Fully isolated environments  
 - Reproducible workflows  
 - Clean separation between system layers  
 - AI‑first documentation and tooling  
+- A stable platform for hosting any number of Dev Containers  
 
 ---
 
 # 2. High‑Level Architecture Diagram
 
-    Windows 11
-      └── Podman Desktop
-            └── dev-box-vscode
-                  └── Podman (inner)
-                        ├── ai-sandbox-dev (Dev Container)
-                        │     └── [Model Containers]
-                        │           ├── ollama
-                        │           ├── lmstudio
-                        │           └── openai-compatible servers
-                        ├── java-dev (Dev Container)
-                        └── dotnet-dev (Dev Container)
+```
+Windows 11
+  └── Podman Desktop
+        └── dev-box-vscode
+              └── Podman (inner)
+                    ├── ai-sandbox-dev (optional Dev Container)
+                    │     └── [Model Containers]
+                    │           ├── ollama
+                    │           ├── lmstudio
+                    │           └── openai-compatible servers
+                    ├── java-dev (example Dev Container)
+                    ├── dotnet-dev (example Dev Container)
+                    └── [arbitrary additional Dev Containers]
+```
 
 ---
 
 # 3. Key Concepts
 
 ### dev‑box‑vscode  
-A persistent Fedora‑based container that acts as the “developer workstation.”  
-VS Code connects to dev‑box‑vscode via SSH or browser, ensuring all Dev Containers run under the same inner Podman instance.
+A persistent Fedora‑based container acting as the “developer workstation.”  
+VS Code connects via SSH or browser, ensuring all Dev Containers run under the same inner Podman instance.
 
 ### Inner Podman  
 The single container engine responsible for:
 
-- Project Dev Containers  
-- AI Sandbox Dev Container  
-- Model containers (Ollama, LM Studio, OpenAI‑compatible servers)
+- Arbitrary Dev Containers  
+- Optional AI Sandbox  
+- Optional model containers  
 
-### AI Sandbox  
-A dedicated Dev Container for:
+### Arbitrary Dev Containers  
+The Studio can host any number of Dev Containers, including:
+
+- Labs  
+- Proofs of concept  
+- Sandboxes  
+- Experiments  
+- Training environments  
+- Full project workspaces  
+
+Each Dev Container is:
+
+- isolated  
+- reproducible  
+- self‑contained  
+- disposable  
+
+Java and .NET are examples only.
+
+### AI Sandbox (optional)  
+A specialized Dev Container for:
 
 - Running local model servers  
 - Experimenting with agent frameworks  
 - Building AI‑driven tools  
 - Keeping AI workloads isolated from project environments  
-
-### Project Dev Containers  
-Each project (Java, .NET, etc.) runs in its own Dev Container with:
-
-- Its own dependencies  
-- Its own tooling  
-- Its own isolated environment  
 
 ---
 
@@ -83,20 +102,20 @@ Each project (Java, .NET, etc.) runs in its own Dev Container with:
 |------|---------|
 | Studio-Architecture.md | Full architecture description |
 | AI-Sandbox.md | AI Sandbox design + model container details |
-| Java-Project.md | Java project Dev Container workflow |
-| DotNet-Project.md | .NET project Dev Container workflow |
+| Java-Project.md | Example Java Dev Container workflow |
+| DotNet-Project.md | Example .NET Dev Container workflow |
 | Dev-Box-VSCode.md | dev‑box‑vscode container details |
 | Bootstrap-Windows.md | Steps to initialize the environment |
 | Glossary.md | Definitions of all architectural terms |
 | Diagram-only-Windows.md | All diagrams in one place |
-| AI.COPILOT-Windows.md | AI context + architectural summary |
+| AI-DIGEST.txt | Unified AI context + architectural summary |
 
 ---
 
 # 5. Philosophy
 
 ### Isolation  
-Every project runs in its own Dev Container.  
+Every Dev Container is fully isolated.  
 No shared dependencies.  
 No host contamination.
 
@@ -122,6 +141,8 @@ All documentation is structured so AI assistants can:
 - Maintain it  
 - Extend it  
 
+The **AI-DIGEST.txt** is the single source of truth for AI.
+
 ---
 
 # 6. Getting Started
@@ -132,7 +153,7 @@ See **Bootstrap-Windows.md** for:
 - Environment creation  
 - dev‑box‑vscode startup  
 - VS Code integration  
-- Project workflows  
+- Adding or running Dev Containers  
 
 ---
 
@@ -140,7 +161,7 @@ See **Bootstrap-Windows.md** for:
 
 If you are using Copilot or another AI assistant:
 
-- Load **AI.COPILOT-Windows.md** as context  
+- Load **AI-DIGEST.txt** as context  
 - Follow the architectural constraints  
 - Maintain consistency with the documentation  
 - Avoid introducing new layers or abstractions unless requested  

@@ -1,244 +1,253 @@
 # AI Sandbox  
-A dedicated Dev Container for local model servers, agent frameworks, and AI experimentation  
-(Studio Architecture — Windows‑native, Podman‑only)
+A specialized Dev Container for isolated AI experimentation
 
-The **AI Sandbox** is a core component of the Studio Architecture. It provides a fully isolated Dev Container designed specifically for running local model servers, experimenting with agent frameworks, and building AI‑driven tools — all without contaminating project Dev Containers or the Windows host.
+The **AI Sandbox** is an optional Dev Container within the Studio Architecture designed for running local model servers, experimenting with agent frameworks, and building AI‑driven tools. It provides a fully isolated environment for AI workloads without affecting project Dev Containers or the host system.
 
-This document describes the purpose, structure, workflows, and model container orchestration of the AI Sandbox.
+The AI Sandbox is not required for the Studio to function.  
+It is a **specialized container pattern** that can be added, removed, or replaced at any time.
 
 ---
 
-# 1. Purpose of the AI Sandbox
+# 1. Purpose
 
 The AI Sandbox exists to:
 
 - Provide a controlled environment for AI experimentation  
-- Run local model servers (Ollama, LM Studio, OpenAI‑compatible servers)  
-- Support agent frameworks and AI tooling  
+- Run local model servers (Ollama, LM Studio, OpenAI‑compatible APIs, etc.)  
+- Host agent frameworks and orchestration tools  
 - Keep AI workloads isolated from project Dev Containers  
-- Maintain deterministic, reproducible AI environments  
-- Serve as the logical home for all model containers  
+- Allow reproducible AI workflows  
+- Support rapid prototyping of AI‑driven features  
+- Avoid polluting project environments with AI dependencies  
 
-The AI Sandbox is intentionally separated from Java, .NET, and other project Dev Containers.
-
----
-
-# 2. Architectural Placement
-
-The AI Sandbox is a Dev Container running under the **inner Podman** instance inside `dev-box-vscode`.
-
-    Windows 11
-      └── Podman Desktop
-            └── dev-box-vscode
-                  └── Podman (inner)
-                        ├── ai-sandbox-dev (Dev Container)
-                        │     └── [Model Containers]
-                        │           ├── ollama
-                        │           ├── lmstudio
-                        │           └── openai-compatible servers
-                        ├── java-dev (Dev Container)
-                        └── dotnet-dev (Dev Container)
-
-### Key Points
-
-- The AI Sandbox is a Dev Container, not a Podman host  
-- All model containers run under the same inner Podman  
-- Model containers are logically grouped under the AI Sandbox  
-- Project Dev Containers do not run model servers  
+The Sandbox is a **tooling container**, not a project container.
 
 ---
 
-# 3. AI Sandbox Dev Container
+# 2. Architectural Position
 
-## 3.1 Purpose
+The AI Sandbox runs under **inner Podman**, inside the persistent `dev-box-vscode` workstation.
 
-The AI Sandbox Dev Container provides:
-
-- A reproducible environment for AI development  
-- A workspace for agent frameworks  
-- Tools for interacting with local model servers  
-- Scripts for starting/stopping model containers  
-- A clean separation from project Dev Containers  
-
-## 3.2 Typical Contents
-
-The AI Sandbox Dev Container may include:
-
-- Python + venv  
-- Node.js (optional)  
-- Agent frameworks (LangChain, Semantic Kernel, etc.)  
-- CLI tools for interacting with model servers  
-- Scripts for orchestrating model containers  
-- Shared volumes for model weights  
-
-Everything inside this container is isolated from Java and .NET Dev Containers.
-
----
-
-# 4. Model Containers
-
-Model containers run under **inner Podman**, not inside the AI Sandbox container itself.
-
-They are siblings to project Dev Containers but are logically associated with the AI Sandbox.
-
-## 4.1 Model Container Layout
-
-    ai-sandbox-dev
-      └── [Model Containers]
-            ├── ollama
-            ├── lmstudio
-            └── openai-compatible servers
-
-## 4.2 Supported Model Containers
-
-### Ollama
-Runs local LLMs with GPU/CPU acceleration.  
-Used for:
-
-- Embeddings  
-- Chat models  
-- Local inference  
-
-### LM Studio
-Runs GGUF models with a local API.  
-Used for:
-
-- OpenAI-compatible inference  
-- Local model experimentation  
-
-### OpenAI-Compatible Servers
-Examples:
-
-- llama-cpp-python server mode  
-- text-generation-inference  
-- custom FastAPI-based model servers  
-
-Used for:
-
-- API-compatible testing  
-- Agent framework integration  
-- Multi-model orchestration  
-
----
-
-# 5. Networking Model
-
-All model containers share the same inner Podman network namespace as the AI Sandbox and project Dev Containers.
+```
+Windows 11
+  └── Podman Desktop
+        └── dev-box-vscode
+              └── Podman (inner)
+                    ├── [Arbitrary Dev Containers]
+                    └── ai-sandbox-dev (optional)
+                          └── [Model Containers]
+                                ├── ollama
+                                ├── lmstudio
+                                └── openai-compatible servers
+```
 
 This ensures:
 
-- Predictable port mappings  
-- Stable container-to-container communication  
-- No cross-layer networking issues  
-
-Typical ports:
-
-- Ollama: 11434  
-- LM Studio: 1234 (varies)  
-- Custom servers: user-defined  
+- AI workloads never touch the host  
+- All model servers run in a predictable environment  
+- AI tools share the same network namespace  
+- Project containers remain clean and isolated  
 
 ---
 
-# 6. Storage Model
+# 3. Components of the AI Sandbox
 
-Model containers may mount volumes for:
+The AI Sandbox typically includes:
 
-- Model weights  
-- Embeddings  
-- Indexes  
-- Cache directories  
+### 3.1 Base Dev Container  
+A Fedora‑ or Ubuntu‑based Dev Container with:
 
-These volumes are:
+- Python  
+- Node.js (optional)  
+- CUDA or ROCm support (optional, GPU‑dependent)  
+- Common AI tooling  
+- CLI utilities  
+- Networking tools  
 
-- Explicitly defined  
-- Persistent  
-- Isolated from project Dev Containers  
-
----
-
-# 7. Workflow
-
-## 7.1 Starting the AI Sandbox
-
-1. Start Windows  
-2. Launch Podman Desktop  
-3. Start `dev-box-vscode`  
-4. Connect via VS Code  
-5. Open the `ai-sandbox` folder  
-6. VS Code attaches to `ai-sandbox-dev`  
-
-## 7.2 Starting Model Containers
-
-From inside the AI Sandbox Dev Container:
-
-- Run provided scripts (e.g., `./start-ollama.sh`)  
-- Or use Podman commands directly  
-- Or use VS Code tasks  
-
-Model containers run independently of the AI Sandbox container itself.
-
-## 7.3 Using Model Servers
-
-Inside the AI Sandbox Dev Container:
-
-- Call model APIs  
-- Run agent frameworks  
-- Test prompts  
-- Build AI tools  
-
-Project Dev Containers may optionally consume model APIs if configured.
+This is the “AI workstation.”
 
 ---
 
-# 8. Design Principles
+### 3.2 Model Containers  
+Model servers run as **separate containers** inside the Sandbox.
 
-## Isolation
-AI workloads are isolated from project Dev Containers.
+Common examples:
 
-## Reproducibility
-All model containers and the AI Sandbox Dev Container are declarative and rebuildable.
+- **Ollama**  
+  - Local LLM runner  
+  - Pulls models on demand  
+  - Exposes an OpenAI‑compatible API  
 
-## Predictability
-No nested Podman hosts.  
-No implicit networking.  
-No hidden dependencies.
+- **LM Studio Server**  
+  - Local inference server  
+  - Supports GGUF models  
+  - Exposes an OpenAI‑compatible API  
 
-## AI‑First Documentation
-All documentation is structured for AI assistants to:
+- **OpenAI‑compatible servers**  
+  - vLLM  
+  - llama.cpp server mode  
+  - custom inference servers  
 
-- Parse  
-- Reason  
-- Maintain  
-- Extend  
+These containers are:
 
----
-
-# 9. Extending the AI Sandbox
-
-Possible extensions:
-
-- GPU-enabled model containers  
-- Multi-model routing  
-- Embedding databases  
-- Vector search engines  
-- Agent orchestration frameworks  
-- Automated model startup scripts  
-
-All extensions must preserve:
-
-- Isolation  
-- Reproducibility  
-- Predictability  
+- isolated  
+- disposable  
+- reproducible  
+- easy to rebuild  
 
 ---
 
-# 10. Summary
+### 3.3 Agent Frameworks (optional)
+The Sandbox may include frameworks such as:
 
-The AI Sandbox is the dedicated environment for all AI experimentation within the Studio Architecture. It provides:
+- LangChain  
+- LlamaIndex  
+- Semantic Kernel  
+- CrewAI  
+- Custom agent runtimes  
 
-- A clean Dev Container  
-- A predictable model container layout  
-- A reproducible environment for AI development  
-- A logical home for all local model servers  
+These are installed **inside the Sandbox Dev Container**, not the model containers.
 
-This document serves as the authoritative reference for the AI Sandbox.
+---
+
+# 4. Networking Model
+
+The AI Sandbox uses a simple, predictable networking pattern:
+
+- The Sandbox Dev Container communicates with model containers via localhost‑mapped ports  
+- Model containers expose ports like `11434`, `1234`, or `8000`  
+- Project Dev Containers may optionally connect to the Sandbox via shared Podman networks  
+
+Example:
+
+```
+ai-sandbox-dev → localhost:11434 → ollama
+ai-sandbox-dev → localhost:8000  → openai-compatible server
+```
+
+Project containers **do not** run model servers directly.
+
+---
+
+# 5. Workflow
+
+## 5.1 Starting the AI Sandbox
+1. Start `dev-box-vscode`  
+2. Open a terminal inside it  
+3. Start the AI Sandbox Dev Container via inner Podman  
+4. Attach VS Code to the Sandbox if needed  
+
+---
+
+## 5.2 Running Model Containers
+From inside the AI Sandbox:
+
+```
+podman run -d -p 11434:11434 ollama/ollama
+podman run -d -p 8000:8000 lmstudio/server
+```
+
+Or use Podman Compose for multi‑model setups.
+
+---
+
+## 5.3 Using the Sandbox from Projects
+Project Dev Containers can call model APIs by:
+
+- Using shared Podman networks  
+- Mapping ports through the Sandbox  
+- Using environment variables for endpoints  
+
+Example:
+
+```
+OPENAI_API_BASE=http://ai-sandbox-dev:8000/v1
+```
+
+---
+
+## 5.4 Resetting the Sandbox
+To reset:
+
+- Stop model containers  
+- Remove them  
+- Rebuild the Sandbox Dev Container  
+- Re‑pull models if needed  
+
+This ensures reproducibility.
+
+---
+
+# 6. Patterns and Best Practices
+
+### 6.1 Keep AI workloads isolated  
+Never install AI tooling directly into project Dev Containers.
+
+### 6.2 Use model containers, not local binaries  
+Model servers should run in containers for reproducibility.
+
+### 6.3 Treat the Sandbox as disposable  
+It should be easy to rebuild at any time.
+
+### 6.4 Use environment variables for endpoints  
+Avoid hard‑coding model URLs.
+
+### 6.5 Document model versions  
+Model reproducibility matters.
+
+---
+
+# 7. Example File Structure
+
+```
+/ai-sandbox/
+  ├── devcontainer.json
+  ├── Dockerfile
+  ├── compose.yaml
+  ├── scripts/
+  │     ├── start-ollama.sh
+  │     ├── start-lmstudio.sh
+  │     └── start-openai-server.sh
+  └── README.md
+```
+
+This structure is optional and customizable.
+
+---
+
+# 8. When to Use the AI Sandbox
+
+Use the Sandbox when you need:
+
+- Local LLM inference  
+- Agent experimentation  
+- Model evaluation  
+- Prompt engineering  
+- AI‑driven tooling  
+- Offline or private inference  
+- Reproducible AI workflows  
+
+Do **not** use it for:
+
+- Project‑specific dependencies  
+- Language runtimes  
+- Build tooling  
+- Application servers  
+
+Those belong in project Dev Containers.
+
+---
+
+# 9. Summary
+
+The AI Sandbox is an optional, specialized Dev Container that provides:
+
+- A clean environment for AI experimentation  
+- Local model servers running in isolated containers  
+- A reproducible, deterministic workflow  
+- Zero contamination of project environments  
+- A flexible, extensible pattern for AI development  
+
+It is a **tooling container**, not a project container.  
+It enhances the Studio but does not define it.
+

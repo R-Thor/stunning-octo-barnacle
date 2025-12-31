@@ -1,300 +1,294 @@
 # Studio Architecture  
-A fully isolated, reproducible, multi‑container development environment  
-(Windows 11 Native, Podman‑only)
+A Windows‑native, Podman‑based, fully isolated development platform
 
-The **Studio Architecture** is a layered, deterministic development system designed to eliminate host pollution, enforce strict isolation, and provide reproducible development workflows across multiple languages and AI workloads. This document provides the full architectural description of the Windows‑native, Podman‑only system.
+The **Studio Architecture** is an abstract, container‑orchestrated development environment designed to host **any** Dev Container: labs, proofs of concept, sandboxes, experiments, training environments, or full project workspaces. It provides a deterministic, reproducible, and isolated platform for engineering work without polluting the host system.
 
----
-
-# 1. Goals of the Architecture
-
-The Studio Architecture is designed to:
-
-- Provide complete isolation between projects  
-- Ensure deterministic, reproducible builds  
-- Support multiple Dev Containers under a single inner Podman engine  
-- Provide a dedicated AI Sandbox for model experimentation  
-- Maintain zero host contamination  
-- Enable clean, predictable workflows for Java, .NET, and AI projects  
-- Support AI‑first documentation and tooling  
-
-This architecture is intentionally minimal, explicit, and predictable.
+This document describes the architecture, its layers, its components, and the patterns used to host arbitrary Dev Containers.
 
 ---
 
-# 2. High‑Level Architecture
+# 1. Purpose of the Studio
 
-The system is built on a layered container model:
+The Studio is designed to:
 
-    Windows 11
-      └── Podman Desktop (host container engine)
-            └── dev-box-vscode (Canonical Workstation)
-                  └── Podman (inner)
-                        ├── ai-sandbox-dev (Dev Container)
-                        │     └── [Model Containers]
-                        │           ├── ollama
-                        │           ├── lmstudio
-                        │           └── openai-compatible servers
-                        ├── java-dev (Dev Container)
-                        └── dotnet-dev (Dev Container)
+- Provide a **clean, isolated, reproducible** development environment  
+- Support **arbitrary Dev Containers** (not tied to any specific language or project)  
+- Offer a **persistent workstation container** for consistent tooling  
+- Run all workloads under a **single inner Podman engine**  
+- Support optional **AI workloads** through a dedicated AI Sandbox  
+- Maintain **zero host pollution**  
+- Enable **deterministic rebuilds** and **predictable workflows**  
+- Serve as a **general-purpose platform** for experimentation, training, and development  
 
-### Key Properties
-
-- **dev‑box‑vscode** is the developer workstation  
-- **Inner Podman** is the single container engine for all Dev Containers  
-- **AI Sandbox** is a Dev Container, not a Podman host  
-- **Model containers** run under inner Podman and are logically grouped under AI Sandbox  
-- **Project Dev Containers** are siblings, not nested  
-- **VS Code** connects to dev‑box‑vscode via SSH or browser  
+The Studio is not a Java environment, a .NET environment, or an AI environment.  
+It is a **platform** that can host any of those.
 
 ---
 
-# 3. Layer‑by‑Layer Breakdown
+# 2. Architectural Layers
 
-## 3.1 Windows 11 (Host)
-The physical host.  
-Runs Podman Desktop and provides the base environment.  
-No development tooling is installed directly on Windows.
+The Studio is built on a clean, layered model:
 
-Host contains only:
+```
+Windows 11
+  └── Podman Desktop (outer Podman)
+        └── dev-box-vscode (persistent workstation container)
+              └── Podman (inner Podman)
+                    ├── [Arbitrary Dev Containers]
+                    │     ├── labs
+                    │     ├── POCs
+                    │     ├── sandboxes
+                    │     ├── experiments
+                    │     ├── training environments
+                    │     └── project workspaces
+                    └── ai-sandbox-dev (optional)
+                          └── [Model Containers]
+                                ├── ollama
+                                ├── lmstudio
+                                └── openai-compatible servers
+```
+
+Each layer has a specific purpose and strict boundaries.
+
+---
+
+# 3. Layer Descriptions
+
+## 3.1 Windows 11 (Host Layer)
+The physical host system.  
+No development tooling is installed directly on Windows except:
 
 - Podman Desktop  
-- Visual Studio (Windows‑native workloads)  
-- IIS (Windows‑native workloads)  
-- Windows SDKs (if required)  
+- VS Code (optional)  
 
-No runtimes, compilers, or SDKs for Linux‑based development.
+All development happens inside containers.
 
 ---
 
-## 3.2 Podman Desktop (Host Container Engine)
-Podman Desktop provides:
+## 3.2 Podman Desktop (Outer Podman)
+The container engine running on Windows.  
+Its responsibilities:
 
-- The container engine for dev‑box‑vscode  
-- Image management  
-- Volume management  
-- Networking  
+- Run the **dev‑box‑vscode** workstation container  
+- Provide a clean, minimal interface to container management  
+- Avoid running project containers directly on the host  
 
-No project containers run directly under Podman Desktop.  
-Only **dev‑box‑vscode** runs here.
+No Dev Containers run here.
 
 ---
 
 ## 3.3 dev‑box‑vscode (Canonical Workstation)
-A long‑lived Fedora‑based container that provides:
+A persistent Fedora‑based container that acts as the developer’s workstation.
 
-- VS Code Server  
-- Git  
-- Shell environment  
-- Inner Podman  
-- Shared volumes for project folders  
-- Developer tools that are not project‑specific  
+It provides:
 
-This is where the developer “lives.”
+- A stable Linux environment  
+- A consistent toolchain  
+- A single place for VS Code to connect  
+- A controlled environment for running the inner Podman engine  
 
-VS Code connects to dev‑box‑vscode via:
+VS Code connects via:
 
 - Remote SSH  
-- Browser‑based VS Code Server  
+- Browser (code-server)  
+- VS Code Remote Containers  
+
+This container is long‑lived and acts as the “desktop” inside the Studio.
 
 ---
 
-## 3.4 Podman (inner)
-The single container engine for:
+## 3.4 Inner Podman (Primary Runtime)
+The inner Podman engine is the heart of the Studio.
 
-- AI Sandbox Dev Container  
-- Java Dev Container  
-- .NET Dev Container  
-- All model containers  
+It runs:
+
+- Arbitrary Dev Containers  
+- Optional AI Sandbox  
+- Optional model containers  
 
 This ensures:
 
-- Consistent networking  
-- Consistent volume mounts  
-- Predictable container relationships  
-- Zero duplication of container engines  
-
-Inner Podman is the heart of the Studio Architecture.
+- All workloads share the same runtime  
+- All workloads are isolated from the host  
+- All Dev Containers follow the same pattern  
+- Reproducibility across projects  
 
 ---
 
-## 3.5 Dev Containers (Project Environments)
+## 3.5 Arbitrary Dev Containers
+The Studio supports **any number** of Dev Containers, including:
 
-### java-dev
-Contains:
-
-- JDK  
-- Maven/Gradle  
-- Java debugging tools  
-- Project‑specific dependencies  
-
-### dotnet-dev
-Contains:
-
-- .NET SDK  
-- NuGet tooling  
-- Project‑specific dependencies  
+- Labs  
+- Proofs of concept  
+- Sandboxes  
+- Experiments  
+- Training environments  
+- Full project workspaces  
 
 Each Dev Container is:
 
-- Fully isolated  
-- Rebuildable  
+- Isolated  
+- Reproducible  
 - Declarative  
 - Disposable  
+- Self‑contained  
+
+Examples (not required):
+
+- `java-dev`  
+- `dotnet-dev`  
+- `python-dev`  
+- `rust-dev`  
+- `go-dev`  
+
+These are **examples only**, not fixed components of the architecture.
 
 ---
 
-## 3.6 AI Sandbox Dev Container
+## 3.6 AI Sandbox (Optional)
+A specialized Dev Container for AI experimentation.
 
-### Purpose
-A dedicated environment for:
+It may host:
 
-- Running local model servers  
-- Experimenting with agent frameworks  
-- Building AI‑driven tools  
-- Keeping AI workloads isolated from project Dev Containers  
+- Local model servers  
+- Agent frameworks  
+- Vector databases  
+- Embedding pipelines  
+- OpenAI‑compatible APIs  
 
-### Model Containers
-Run under inner Podman:
+Model containers run **inside** the AI Sandbox, not directly under inner Podman.
+
+Examples:
 
 - Ollama  
 - LM Studio  
 - OpenAI‑compatible servers  
 
-These containers are:
-
-- Siblings to project Dev Containers  
-- Logically grouped under AI Sandbox  
-- Not nested Podman hosts  
-- Not directly accessible to java‑dev or dotnet‑dev unless explicitly exposed  
+This keeps AI workloads isolated from project environments.
 
 ---
 
-# 4. Networking Model
+# 4. Architectural Principles
 
-All Dev Containers and model containers share the same inner Podman network namespace.
+## 4.1 Isolation
+Each Dev Container is fully isolated:
 
-This ensures:
+- No shared dependencies  
+- No cross‑contamination  
+- No host pollution  
 
-- Predictable container‑to‑container communication  
-- Stable port mappings  
-- No cross‑layer networking surprises  
-
-The AI Sandbox exposes model servers on known ports.  
-Project Dev Containers may consume them if configured.
-
----
-
-# 5. Storage Model
-
-### dev‑box‑vscode volumes
-- Persistent home directory  
-- Persistent workspace directories  
-- Shared access to project folders  
-
-### Dev Container volumes
-Each Dev Container may define:
-
-- Project‑specific caches  
-- Build artifacts  
-- Tooling caches  
-
-### Model container volumes
-Used for:
-
-- Model weights  
-- Embeddings  
-- Indexes  
-
-All volumes are explicitly defined and isolated.
-
----
-
-# 6. Development Workflow
-
-## 6.1 Startup
-
-1. Start Windows  
-2. Launch Podman Desktop  
-3. Start dev‑box‑vscode  
-4. Connect via VS Code  
-5. VS Code detects `.devcontainer` folders  
-6. Developer chooses which project to open  
-
-## 6.2 Working on a project
-
-- Open project folder in VS Code  
-- VS Code attaches to the appropriate Dev Container  
-- All tooling runs inside the container  
-- Builds are deterministic and isolated  
-
-## 6.3 Working with AI Sandbox
-
-- Open the AI Sandbox folder  
-- VS Code attaches to ai-sandbox-dev  
-- Model containers can be started/stopped via scripts or tasks  
-- AI workloads remain isolated from project Dev Containers  
-
----
-
-# 7. Design Philosophy
-
-## 7.1 Isolation
-Every project runs in its own Dev Container.  
-No shared dependencies.  
-No host contamination.
-
-## 7.2 Reproducibility
+## 4.2 Reproducibility
 Every environment is:
 
 - Declarative  
 - Deterministic  
 - Rebuildable  
 
-## 7.3 Predictability
-The system avoids unnecessary complexity:
+## 4.3 Predictability
+The architecture avoids unnecessary complexity:
 
 - No Podman‑in‑Podman‑in‑Podman  
-- No hidden side effects  
-- No implicit networking  
+- No hidden networking  
+- No implicit side effects  
 
-## 7.4 AI‑First Documentation
-All documentation is written so AI assistants can:
+## 4.4 Extensibility
+The Studio can host:
 
-- Parse it  
-- Reason over it  
-- Maintain it  
-- Extend it  
+- Any language  
+- Any framework  
+- Any tooling  
+- Any number of Dev Containers  
 
----
+## 4.5 AI‑First Documentation
+All documentation is structured for:
 
-# 8. Future Extensions
+- AI reasoning  
+- AI maintenance  
+- AI extension  
 
-Potential enhancements:
-
-- Additional language Dev Containers  
-- GPU‑enabled model containers  
-- Distributed model serving  
-- Multi‑project orchestration  
-- Automated environment bootstrap scripts  
-- CI/CD integration  
-
-All extensions must preserve the core principles:
-
-- Isolation  
-- Reproducibility  
-- Predictability  
+The **AI-DIGEST.txt** is the single source of truth for AI.
 
 ---
 
-# 9. Summary
+# 5. Workflows
 
-The Studio Architecture is a clean, deterministic, multi‑container development system designed for long‑term maintainability and AI‑assisted workflows. It provides:
+## 5.1 Environment Initialization
+See **Bootstrap-Windows.md** for:
 
-- A stable architecture  
-- Clear separation of concerns  
-- Predictable Dev Container behavior  
-- A dedicated AI Sandbox  
-- Zero host pollution  
+- Installing Podman Desktop  
+- Creating dev‑box‑vscode  
+- Initializing inner Podman  
 
-This document serves as the authoritative reference for the Studio Architecture.
+## 5.2 Adding a New Dev Container
+1. Create a new folder under `/containers/` or `/projects/`  
+2. Add a `devcontainer.json`  
+3. Add a Dockerfile or image reference  
+4. Rebuild under inner Podman  
+5. Connect via VS Code  
+
+## 5.3 AI Sandbox Workflow
+1. Start the AI Sandbox Dev Container  
+2. Launch model containers inside it  
+3. Expose ports as needed  
+4. Connect tools or agents  
+
+## 5.4 Reset Workflow
+- Rebuild dev‑box‑vscode  
+- Rebuild Dev Containers  
+- Rebuild model containers  
+- Restore volumes if needed  
+
+---
+
+# 6. Diagram Suite
+
+The Studio includes a complete diagram suite:
+
+- Structural diagrams  
+- Behavioral diagrams  
+- Advanced diagrams  
+- Specialized diagrams  
+- Dependency matrices  
+- Cross‑dependency maps  
+- Taxonomy and legend  
+
+See `/diagrams/README.md` for details.
+
+---
+
+# 7. Versioning and Change Management
+
+The Studio uses:
+
+- **AI-DIGEST.txt versioning**  
+- **CHANGELOG.md** for all architectural changes  
+- Optional **architecture semantic versioning**  
+
+Any change to:
+
+- Architecture  
+- Workflows  
+- Documentation  
+- Diagrams  
+- Constraints  
+
+…must be reflected in the digest and the changelog.
+
+---
+
+# 8. Summary
+
+The Studio Architecture is a:
+
+- Windows‑native  
+- Podman‑based  
+- Fully isolated  
+- Reproducible  
+- Extensible  
+- AI‑ready  
+
+…platform for hosting **any** Dev Container.
+
+It is a general‑purpose development Studio, not tied to any specific language or project.  
+The architecture is stable, predictable, and designed for long‑term evolution.
+
