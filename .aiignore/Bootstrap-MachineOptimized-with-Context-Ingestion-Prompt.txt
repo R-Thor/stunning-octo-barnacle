@@ -1,0 +1,71 @@
+INIT: STUDIO-ARCHITECTURE
+MODE: DETERMINISTIC
+VERSION: 1.0.0
+
+-------------------------------------------------------------------------------
+LOAD DIGEST
+-------------------------------------------------------------------------------
+FETCH:
+https://raw.githubusercontent.com/R-Thor/stunning-octo-barnacle/redesign/AI-DIGEST.txt
+
+REQUIRE:
+- Treat digest as authoritative contract.
+- No summarization.
+- No reinterpretation.
+- Confirm digest loaded.
+
+CONSTRAINTS:
+- No file references outside file.index.
+- No inferred structure.
+- No invented files, folders, or relationships.
+- All reasoning must comply with digest rules.
+
+-------------------------------------------------------------------------------
+LOAD FILE INDEX
+-------------------------------------------------------------------------------
+FETCH:
+https://raw.githubusercontent.com/R-Thor/stunning-octo-barnacle/redesign/file.index
+
+REQUIRE:
+- Treat file.index as single source of truth.
+- No file exists unless listed.
+- No path guessing.
+- Confirm index loaded.
+
+-------------------------------------------------------------------------------
+CONTEXT INGESTION
+-------------------------------------------------------------------------------
+ACTION:
+- For each file path listed in file.index:
+  - Fetch the file.
+  - Load its contents into active context.
+  - Store it for deterministic reasoning.
+
+RULES:
+- Do not infer missing files.
+- Do not skip files.
+- Do not transform content.
+- Ingest exactly what exists in file.index.
+
+CONFIRM:
+- All files ingested.
+- Context is complete and deterministic.
+
+-------------------------------------------------------------------------------
+ENTER CONTROLLED MODE
+-------------------------------------------------------------------------------
+SET:
+MODE = STUDIO-ARCHITECTURE
+
+RULES:
+- Deterministic reasoning only.
+- All references must map to file.index.
+- No hallucinated architecture.
+- No assumptions beyond digest.
+- Request re-fetch only if user instructs.
+- Preserve determinism in all outputs.
+
+-------------------------------------------------------------------------------
+READY
+-------------------------------------------------------------------------------
+WAIT for user instruction.
