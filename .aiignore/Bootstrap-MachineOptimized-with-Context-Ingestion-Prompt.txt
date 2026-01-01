@@ -9,16 +9,11 @@ FETCH:
 https://raw.githubusercontent.com/R-Thor/stunning-octo-barnacle/redesign/AI-DIGEST.txt
 
 REQUIRE:
-- Treat digest as authoritative contract.
-- No summarization.
-- No reinterpretation.
+- Load digest.
+- Treat digest as authoritative.
+- Do not summarize.
+- Do not reinterpret.
 - Confirm digest loaded.
-
-CONSTRAINTS:
-- No file references outside file.index.
-- No inferred structure.
-- No invented files, folders, or relationships.
-- All reasoning must comply with digest rules.
 
 -------------------------------------------------------------------------------
 LOAD FILE INDEX
@@ -27,47 +22,43 @@ FETCH:
 https://raw.githubusercontent.com/R-Thor/stunning-octo-barnacle/redesign/file.index
 
 REQUIRE:
+- Load file.index.
 - Treat file.index as single source of truth.
-- No file exists unless listed.
-- No path guessing.
 - Confirm index loaded.
 
 -------------------------------------------------------------------------------
 URL CONSTRUCTION RULE
 -------------------------------------------------------------------------------
-For every file path listed in file.index:
-
-1. Remove any leading "./"
-2. Append the cleaned path to this prefix:
-
+For each path in file.index:
+1. Remove leading "./"
+2. Append cleaned path to prefix:
    https://raw.githubusercontent.com/R-Thor/stunning-octo-barnacle/redesign/
-
-3. The result is the canonical raw URL for that file.
-
-Example:
-Input path: ./diagrams/behavioral/Diagram-gantt.mmd
-Cleaned:    diagrams/behavioral/Diagram-gantt.mmd
-Final URL:  https://raw.githubusercontent.com/R-Thor/stunning-octo-barnacle/redesign/diagrams/behavioral/Diagram-gantt.mmd
+3. Result is canonical raw URL.
 
 -------------------------------------------------------------------------------
 CONTEXT INGESTION
 -------------------------------------------------------------------------------
 ACTION:
-- For each file path listed in file.index:
-  - Normalize the path using the URL CONSTRUCTION RULE.
-  - Construct the raw GitHub URL.
-  - Fetch the file from the constructed URL.
-  - Load its contents into active context exactly as retrieved.
+- For each file path in file.index:
+  - Normalize path using URL CONSTRUCTION RULE.
+  - Construct canonical raw URL.
+  - Fetch file.
+  - Load contents into active context exactly as retrieved.
 
 RULES:
-- Do not infer missing files.
-- Do not skip files.
-- Do not transform content.
-- Ingest only files explicitly listed in file.index.
+- No inferred files.
+- No skipped files.
+- No transformed content.
+- Ingest only files listed in file.index.
 
-CONFIRM:
-- All files have been ingested using deterministic URL construction.
-- Context is complete and deterministic.
+-------------------------------------------------------------------------------
+MANDATORY ENUMERATION
+-------------------------------------------------------------------------------
+After ingestion:
+- Enumerate all ingested files.
+- List each file path exactly as it appears in file.index.
+- Confirm successful ingestion for each file.
+- Do not summarize file contents.
 
 -------------------------------------------------------------------------------
 ENTER CONTROLLED MODE
@@ -78,9 +69,8 @@ MODE = STUDIO-ARCHITECTURE
 RULES:
 - Deterministic reasoning only.
 - All references must map to file.index.
-- No hallucinated architecture.
 - No assumptions beyond digest.
-- Request re-fetch only if user instructs.
+- No hallucinated structure.
 - Preserve determinism in all outputs.
 
 -------------------------------------------------------------------------------
