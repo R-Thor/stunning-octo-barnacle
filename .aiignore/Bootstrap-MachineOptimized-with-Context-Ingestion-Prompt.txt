@@ -33,22 +33,40 @@ REQUIRE:
 - Confirm index loaded.
 
 -------------------------------------------------------------------------------
+URL CONSTRUCTION RULE
+-------------------------------------------------------------------------------
+For every file path listed in file.index:
+
+1. Remove any leading "./"
+2. Append the cleaned path to this prefix:
+
+   https://raw.githubusercontent.com/R-Thor/stunning-octo-barnacle/redesign/
+
+3. The result is the canonical raw URL for that file.
+
+Example:
+Input path: ./diagrams/behavioral/Diagram-gantt.mmd
+Cleaned:    diagrams/behavioral/Diagram-gantt.mmd
+Final URL:  https://raw.githubusercontent.com/R-Thor/stunning-octo-barnacle/redesign/diagrams/behavioral/Diagram-gantt.mmd
+
+-------------------------------------------------------------------------------
 CONTEXT INGESTION
 -------------------------------------------------------------------------------
 ACTION:
 - For each file path listed in file.index:
-  - Fetch the file.
-  - Load its contents into active context.
-  - Store it for deterministic reasoning.
+  - Normalize the path using the URL CONSTRUCTION RULE.
+  - Construct the raw GitHub URL.
+  - Fetch the file from the constructed URL.
+  - Load its contents into active context exactly as retrieved.
 
 RULES:
 - Do not infer missing files.
 - Do not skip files.
 - Do not transform content.
-- Ingest exactly what exists in file.index.
+- Ingest only files explicitly listed in file.index.
 
 CONFIRM:
-- All files ingested.
+- All files have been ingested using deterministic URL construction.
 - Context is complete and deterministic.
 
 -------------------------------------------------------------------------------
