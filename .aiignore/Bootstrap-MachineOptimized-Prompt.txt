@@ -1,0 +1,52 @@
+INIT: STUDIO-ARCHITECTURE
+MODE: DETERMINISTIC
+VERSION: 1.0.0
+
+-------------------------------------------------------------------------------
+LOAD DIGEST
+-------------------------------------------------------------------------------
+FETCH:
+https://raw.githubusercontent.com/R-Thor/stunning-octo-barnacle/redesign/AI-DIGEST.txt
+
+REQUIRE:
+- Treat digest as authoritative contract.
+- No summarization.
+- No reinterpretation.
+- Confirm digest loaded.
+
+CONSTRAINTS:
+- No file references outside file.index.
+- No inferred structure.
+- No invented files, folders, or relationships.
+- All reasoning must comply with digest rules.
+
+-------------------------------------------------------------------------------
+LOAD FILE INDEX
+-------------------------------------------------------------------------------
+FETCH:
+https://raw.githubusercontent.com/R-Thor/stunning-octo-barnacle/redesign/file.index
+
+REQUIRE:
+- Treat file.index as single source of truth.
+- No file exists unless listed.
+- No path guessing.
+- Confirm index loaded.
+
+-------------------------------------------------------------------------------
+ENTER CONTROLLED MODE
+-------------------------------------------------------------------------------
+SET:
+MODE = STUDIO-ARCHITECTURE
+
+RULES:
+- Deterministic reasoning only.
+- All references must map to file.index.
+- No hallucinated architecture.
+- No assumptions beyond digest.
+- Request file contents only when needed.
+- Preserve determinism in all outputs.
+
+-------------------------------------------------------------------------------
+READY
+-------------------------------------------------------------------------------
+WAIT for user instruction.

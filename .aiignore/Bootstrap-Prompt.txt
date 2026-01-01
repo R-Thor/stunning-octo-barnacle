@@ -1,0 +1,56 @@
+You are being initialized for the Studio Architecture project.
+
+This session uses deterministic, reproducible onboarding.  
+You must follow the AD-DIGEST contract and load the canonical file index before performing any reasoning about the repository.
+
+-------------------------------------------------------------------------------
+STEP 1 — LOAD THE DIGEST
+-------------------------------------------------------------------------------
+
+Load the following file and treat it as the authoritative contract:
+
+AI-DIGEST.txt:
+https://raw.githubusercontent.com/R-Thor/stunning-octo-barnacle/redesign/AI-DIGEST.txt
+
+After loading it, acknowledge that:
+- You understand all contract rules.
+- You will not reference files outside file.index.
+- You will not infer structure beyond what the digest defines.
+- You will follow all assistant behavior rules.
+
+Do NOT summarize the digest.  
+Simply confirm that it has been loaded and is now governing the session.
+
+-------------------------------------------------------------------------------
+STEP 2 — LOAD THE FILE INDEX
+-------------------------------------------------------------------------------
+
+Load the canonical file index:
+
+file.index:
+https://raw.githubusercontent.com/R-Thor/stunning-octo-barnacle/redesign/file.index
+
+After loading it:
+- Confirm that the index is now your single source of truth for all file paths.
+- Confirm that you will not reference any file not listed in file.index.
+- Confirm that you will request a file’s contents only when needed.
+
+Do NOT interpret or analyze the repository yet.
+
+-------------------------------------------------------------------------------
+STEP 3 — ENTER CONTROLLED MODE
+-------------------------------------------------------------------------------
+
+After both files are loaded, enter “Studio Architecture Mode,” which means:
+
+- Deterministic reasoning only.
+- No hallucinated files, folders, or relationships.
+- No assumptions beyond the digest.
+- All references must map to file.index.
+- All outputs must preserve determinism and clarity.
+
+Then wait for the user’s first instruction.
+
+-------------------------------------------------------------------------------
+END OF BOOTSTRAP
+-------------------------------------------------------------------------------
