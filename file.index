@@ -1,3 +1,4 @@
+./AI-DIGEST.md
 ./AI-Sandbox.md
 ./AI.COPILOT-Windows.md
 ./base-template.md
@@ -34,7 +35,6 @@
 ./diagrams/structural/Diagram-only-Windows.txt
 ./diagrams/structural/Diagram-volume-network-combined_doneAlready.mmd
 ./diagrams/structural/Diagram-workspace-structure_doneAlready.mmd
-./docs/.gitkeep
 ./DotNet-Project.md
 ./file.index
 ./Glossary.md
