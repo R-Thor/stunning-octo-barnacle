@@ -1,0 +1,17 @@
+services:
+  dev-box:
+    build:
+      context: .
+      dockerfile: dev-box.Dockerfile
+    container_name: dev-box
+    hostname: dev-box
+    privileged: true
+    network_mode: host  # <--- ADD THIS LINE
+    stdin_open: true 
+    tty: true
+    volumes:
+      - /home/brutef0rce/projects:/workspace:Z
+      - dev-box-home:/root:Z
+
+volumes:
+  dev-box-home:

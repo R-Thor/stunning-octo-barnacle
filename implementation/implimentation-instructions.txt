@@ -1,0 +1,151 @@
+===============================================================================
+IMPLEMENTATION INSTRUCTIONS — STUDIO ARCHITECTURE
+===============================================================================
+Purpose:
+This document provides step-by-step instructions for implementing the Studio
+Architecture. It defines the correct order of operations, required tools, and
+expected outcomes for each phase. All completed steps must be recorded in
+IMPLEMENTATION-LOG.txt with a Zulu timestamp.
+
+===============================================================================
+0. HOST PREREQUISITES (OUTER PODMAN)
+===============================================================================
+These steps occur on the Windows 11 host.
+
+0.1 Install Podman Desktop (latest version)
+    - Required for running dev-box-vscode.
+    - Ensure "Enable Windows Subsystem for Linux" is NOT required.
+    - Ensure Linux containers are enabled.
+
+0.2 Verify Podman installation
+    podman --version
+    podman info
+
+0.3 No development tools are installed on Windows.
+    - No Node, Python, Java, .NET SDKs, Go, Rust, etc.
+    - Only Podman Desktop + Visual Studio (optional) + IIS (optional).
+
+===============================================================================
+1. CREATE DEV-BOX-VSCODE IMPLEMENTATION ROOT
+===============================================================================
+1.1 Create folder:
+    src/dev-box/
+
+1.2 Add initial files:
+    - Containerfile (stub)
+    - compose.yaml or docker-compose.yaml
+    - README (optional)
+
+1.3 The dev-box-vscode container is the canonical workstation.
+    - It runs under outer Podman.
+    - It hosts inner Podman.
+    - All development occurs inside it.
+
+===============================================================================
+2. BUILD MINIMAL DEV-BOX-VSCODE CONTAINER
+===============================================================================
+2.1 Base image:
+    FROM quay.io/podman/stable
+
+2.2 Install core tools:
+    - podman-compose
+    - git
+    - neovim
+    - gcc, make
+    - ripgrep
+
+2.3 Configure dnf for speed:
+    max_parallel_downloads=10
+    fastestmirror=True
+
+2.4 Set working directory:
+    WORKDIR /workspace
+
+2.5 Compose configuration:
+    - privileged: true
+    - network_mode: host
+    - volumes:
+        /workspace
+        /root (persistent)
+
+===============================================================================
+3. ENABLE INNER PODMAN INSIDE DEV-BOX-VSCODE
+===============================================================================
+3.1 Ensure privileged mode is enabled in compose.
+
+3.2 Configure storage:
+    /var/lib/containers/
+    /run/podman/
+
+3.3 Enable systemd or cgroup support if required.
+
+3.4 Validate inner Podman:
+    podman info
+    podman ps
+
+===============================================================================
+4. INSTALL VS CODE SERVER + SSH
+===============================================================================
+4.1 Install OpenSSH server inside dev-box-vscode.
+
+4.2 Enable SSH service.
+
+4.3 Install VS Code Server (Remote SSH or code-server).
+
+4.4 Validate connection:
+    ssh root@localhost -p 2222
+
+===============================================================================
+5. PREPARE FOR DEV CONTAINERS (INNER PODMAN)
+===============================================================================
+5.1 Create folders for project containers:
+    src/java-dev/
+    src/dotnet-dev/
+    src/ai-sandbox-dev/
+
+5.2 Each Dev Container includes:
+    - Containerfile
+    - devcontainer.json
+    - README
+
+5.3 Dev Containers run under inner Podman only.
+
+===============================================================================
+6. PREPARE AI SANDBOX (OPTIONAL)
+===============================================================================
+6.1 Create folder:
+    src/ai-sandbox/
+
+6.2 Add:
+    - Containerfile
+    - compose.yaml
+    - scripts/
+
+6.3 Model containers run inside the AI Sandbox:
+    - ollama
+    - lmstudio
+    - openai-compatible servers
+
+===============================================================================
+7. VALIDATION WORKFLOW
+===============================================================================
+7.1 Start dev-box-vscode.
+7.2 Verify inner Podman.
+7.3 Build a sample Dev Container.
+7.4 Attach VS Code.
+7.5 Run a sample workload.
+
+===============================================================================
+8. DOCUMENTATION UPDATES
+===============================================================================
+8.1 Every implementation step must be logged in:
+    /implementation/IMPLEMENTATION-LOG.txt
+
+8.2 Architecture-level changes must be added to:
+    CHANGELOG.md
+
+8.3 No documentation is updated until implementation is stable.
+
+===============================================================================
+END OF FILE
+===============================================================================

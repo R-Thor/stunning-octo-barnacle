@@ -1,0 +1,22 @@
+[20260102004500Z] Added initial dev-box-vscode Containerfile and compose definition
+- Added a Fedora-based Containerfile using quay.io/podman/stable as the base image.
+- Installed core tools: neovim, podman-compose, git, gcc, make, ripgrep.
+- Created initial docker-compose service for dev-box with privileged mode and host networking.
+- Mounted /workspace and persistent /root volume.
+- This establishes the foundation for the dev-box-vscode workstation container.
+
+[20260102004200Z] Added src/dev-box folder for dev-box-vscode implementation
+- Created src/dev-box/ as the canonical location for the dev-box-vscode container implementation.
+- Added initial implementation files into this folder (Containerfile, compose file, and supporting assets).
+- This establishes the source tree for the workstation container and separates implementation from documentation.
+
+[20260102003600Z] Created /implementation folder
+- Added a new top-level folder named "implementation".
+- Moved IMPLEMENTATION-LOG.txt into /implementation for better organization.
+- Purpose: keep implementation-phase artifacts isolated from architecture-level documentation.
+
+[20260102003600Z] Initialization of Implementation Log
+- Created IMPLEMENTATION-LOG.txt to track all implementation-phase changes.
+- Purpose: capture granular decisions, file additions, workflow adjustments, and diagram updates.
+- This log will remain chronological and append-only.
+- Architectural changes will continue to be recorded in CHANGELOG.md.
