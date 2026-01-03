@@ -1,0 +1,65 @@
+```mermaid
+flowchart TD
+
+    %% ============================
+    %% LAYER 0 — WINDOWS HOST
+    %% ============================
+    subgraph L0[Layer 0: Windows Host]
+        W11[Windows 11 Pro]
+        HV[Hyper-V Virtualization]
+        FW[Windows Firewall]
+        SWITCH[Hyper-V Default Switch (NAT)]
+        W11 --> HV
+        W11 --> FW
+        HV --> SWITCH
+    end
+
+    %% ============================
+    %% LAYER 1 — PODMAN CLI
+    %% ============================
+    subgraph L1[Layer 1: Podman CLI (Windows)]
+        PODMAN_CLI[podman.exe<br/>Windows CLI]
+        DOCKER_PIPE[npipe:////./pipe/docker_engine<br/>Docker-Compatible API]
+        PODMAN_CLI --> DOCKER_PIPE
+    end
+
+    %% ============================
+    %% LAYER 2 — PODMAN MACHINE VM
+    %% ============================
+    subgraph L2[Layer 2: Podman Machine VM (Fedora CoreOS)]
+        COREOS[Fedora CoreOS<br/>Immutable OS]
+        KERNEL[Linux Kernel 6.x]
+        CRUN[crun OCI Runtime]
+        CGROUPS[Cgroups v2]
+        NETAVARK[netavark + pasta<br/>Rootless Networking]
+        OVERLAY[overlayfs Storage]
+        COREOS --> KERNEL
+        KERNEL --> CRUN
+        KERNEL --> CGROUPS
+        COREOS --> NETAVARK
+        COREOS --> OVERLAY
+    end
+
+    %% ============================
+    %% LAYER 3 — DEV-BOX
+    %% ============================
+    subgraph L3[Layer 3: Dev‑Box (Containerized Development Environment)]
+        DEVCONTAINER[devcontainer.json<br/>Environment Definition]
+        BASEIMAGE[Base Image<br/>Ubuntu/Debian/Fedora/etc.]
+        TOOLCHAIN[Tooling Layer<br/>Languages, Build Tools, Linters]
+        WORKSPACE[Workspace Mount<br/>Project Files]
+        VSCODE[VS Code<br/>Devcontainer Extension]
+        DEVCONTAINER --> BASEIMAGE
+        BASEIMAGE --> TOOLCHAIN
+        TOOLCHAIN --> WORKSPACE
+        VSCODE --> DEVCONTAINER
+    end
+
+    %% ============================
+    %% CROSS-LAYER CONNECTIONS
+    %% ============================
+    HV --> PODMAN_CLI
+    PODMAN_CLI --> COREOS
+    DOCKER_PIPE --> VSCODE
+    NETAVARK --> VSCODE
+    WORKSPACE --> W11
