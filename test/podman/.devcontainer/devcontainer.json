@@ -1,0 +1,5 @@
+{
+  "name": "podman-test",
+  "image": "docker.io/library/alpine:latest",
+  "remoteUser": "root"
+}
